@@ -1,9 +1,0 @@
-; > Version - generated from Messages, used by s.Main
-
-        GBLS    VString
-        GBLS    Date
-
-VString SETS    "2.29"
-Date    SETS    "(19 Jul 1996)"
-
-        END

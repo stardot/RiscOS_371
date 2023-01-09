@@ -1,3 +1,0 @@
-If "<Printers$Dir>"=""  Then Set Printers$Dir  <Obey$Dir>
-If "<Printers$Path>"="" Then Set Printers$Path Choices:Printers.,<Obey$Dir>.,Resources:$.Resources.Printers.
-Set File$Type_FC6 PrntDefn
