@@ -169,7 +169,8 @@ Module          SETL    {FALSE}
  [ MorrisSupport
 IncludeTestSrc  SETL    {TRUE}
  |
-IncludeTestSrc  SETL    :LNOT: (MEMM_Type = "MEMC2") ; not on internal test versions
+IncludeTestSrc  SETL    (MEMM_Type = "ARM600") ; test source is ARM600-shaped (32-bit/CP15/L1-L2 PT);
+                                               ; not used on MEMC1 (A5000) or MEMC2
  ]
 
  [ RunningOnEmul
@@ -202,7 +203,7 @@ RISCPCBurstMode SETL    {FALSE}
   ]
 
                 GBLL    Select16BitSound
-Select16BitSound SETL   {TRUE}
+Select16BitSound SETL   (VIDC_Type = "VIDC20") ; 16-bit sound is a VIDC20/IOMD feature
 
                 GBLL    Simulator               ; running on simulator?
 Simulator       SETL    {FALSE}
@@ -287,7 +288,7 @@ LateAborts      SETL    MEMM_Type = "ARM600" :LAND: {TRUE}
                 GBLL    ARM810usePLL            ;whether to use PLL for fast clock (else RefClk pin)
                 GBLL    ARM810_POST             ;whether to run POST for ARM810 (StrongARM_POST must also be true)
 
-StrongARM              SETL {TRUE}
+StrongARM              SETL {TRUE} :LAND: MEMM_Type = "ARM600"
 SAWBbroken             SETL {FALSE} :LAND: StrongARM
 SAcleanflushbroken     SETL {TRUE}  :LAND: StrongARM
 SASTMhatbroken         SETL {TRUE}  :LAND: StrongARM
@@ -301,7 +302,7 @@ ARM810usePLL           SETL {TRUE}  :LAND: ARM810fastclock
 ARM810_POST            SETL {FALSE} :LAND: ARM810support
 
                 GBLL    VCOstartfix              ;code in early kernel to fix VCO start problem on A7000 (esp. 7500FE)
-VCOstartfix     SETL    {TRUE}
+VCOstartfix     SETL    (IO_Type = "IOMD")       ; VCO start fix is specific to IOMD/VIDC20 machines
 
 
                 GBLL    MorrisIDString           ;whether printed CPU string includes 7500/7500FE recognition
@@ -648,17 +649,34 @@ StartOfPMF
 
 StartOfAMB_beforealign
         ALIGN   4096                    ;align to 4k page boundary, for easy ROMpatch
+
+; AMBControl is part of the ARM600 memory management; only include it there.
+; The GET must not be placed inside a conditional, because the AMBControl
+; sources each terminate with END, which cannot be reached with a conditional
+; opened in this file.
+                GBLS    GetAMBCode
+ [ MEMM_Type = "ARM600"
+GetAMBCode      SETS    "GET s.AMBControl.AMB"
+ |
+GetAMBCode      SETS    ""
+ ]
+ [ MEMM_Type = "ARM600"
 StartOfAMB
-        GET     s.AMBControl.AMB
+ ]
+        $GetAMBCode
+ [ MEMM_Type = "ARM600"
         DCB     "GROT"                  ;spare words marker
         ALIGN   4096                    ;align to 4k page boundary, for easy ROMpatch
+ ]
 
 EndOfKernel
         &       0                       ; for patching by BigSplit et al
 
         ! 0, "PMF section size = &" :CC: :STR: (StartOfAMB_beforealign - StartOfPMF)
+ [ MEMM_Type = "ARM600"
         ! 0, "AMB section (4k aligned) starts at ":CC::STR:(StartOfAMB)
         ! 0, "AMB section size (4k aligned) = &" :CC: :STR: (EndOfKernel - StartOfAMB)
+ ]
 
  [ med_00001_debug
  ! 0,""

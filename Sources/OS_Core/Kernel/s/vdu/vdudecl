@@ -141,7 +141,7 @@ DCR_HDWRShift   *       0
  |
 
 ; Registers
-                                                                                                                                                                                                     
+
 HorizDisplayStart       *       &8C000000       ; used in mode change code
 HorizCursorStart        *       &98000000       ; used in pointer programming
 

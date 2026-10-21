@@ -239,6 +239,7 @@ HardFont
         = &60,&60,&7C,&66,&7C,&60,&60,&00 ;ISO  "small thorn, Icelandic"
         = &66,&00,&66,&66,&66,&3E,&06,&3C ;ISO  "small y with umlaut"
 
-        ASSERT (.-HardFont)=(256-32)*8
+HardFontEnd
+        ASSERT (HardFontEnd-HardFont)=(256-32)*8
 
         END

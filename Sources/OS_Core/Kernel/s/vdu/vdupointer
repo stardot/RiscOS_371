@@ -502,8 +502,9 @@ UpdatePointer ROUT
         MOV     R1, #0                  ; Y := 0
 10
 
-        ;Rightio, it's time to muck about if we're on a dual-panel LCD...
         Push    "r5,r14"
+     [ VIDC_Type = "VIDC20"
+        ;Rightio, it's time to muck about if we're on a dual-panel LCD...
         MOV     r14, #0
         LDRB    r14, [r14, #LCD_Active]
         TST     r14, #&80
@@ -534,19 +535,27 @@ UpdatePointer ROUT
         MOV     R14, #CursorStraddle    ; It straddles the paddles, so special programming of VCSR & VCER required later...
 
 12
+     |
+        MOV     R14, #0                 ; VIDC1a has no dual-panel LCD support
+     ]
         Push    "r1, r14"
+     [ MEMC_Type = "IOMD"
         MOV     r0, #0
         LDR     r0, [r0, #DRAMPhysAddrA]
         LDR     r1, =DRAMOffset_CursorChunk + (CursorData - CursorChunkAddress)
         ADD     r0, r0, r1
-
+     |
+        LDR     r0, =PhysCursorStartAdr
+     ]
         ADD     r0, r0, r4
         MOV     r1, #MEMCDAG_CInit
         BL      SetDAG
         Pull    "r1, r14"
 
+     [ VIDC_Type = "VIDC20"
         CMP     R14, #CursorStraddle
         BEQ     %FT13                   ;It's a cursor straddly thingy, so we've to muck the VCSR & VCER up...
+     ]
 
         LDR     R3, [WsPtr, #VertAdjust] ; get display start value
         ADD     R1, R1, R3              ; and add on
@@ -563,6 +572,7 @@ UpdatePointer ROUT
         Pull    "r5,r14"
         MOV     PC, R14
 
+     [ VIDC_Type = "VIDC20"
 13
         LDR     R3, [WsPtr, #VertAdjust] ; get display start value
         ADD     R1, R1, R3              ; and add on
@@ -579,6 +589,7 @@ UpdatePointer ROUT
 
         Pull    "r5,r14"
         MOV     PC, R14
+     ]
 
  |                              ;BELOW MUST BE UNINDENTED BY 4CHARS TO WORK AGAIN!!!!!!!
     UpdatePointer ROUT

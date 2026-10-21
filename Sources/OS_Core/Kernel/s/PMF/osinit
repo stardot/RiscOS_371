@@ -381,6 +381,8 @@ UpdateLatchB
 ;
 ;       Returns the result in R4
 
+ [ MorrisSupport
+
 UpdateMonitorTypeLatch
         Push    "R2, R3, R14"
         MOV     R14, PC
@@ -401,6 +403,7 @@ UpdateMonitorTypeLatch
         TEQP    R14, #0                 ;Re-enable IRQ
         Pull    "R2, R3, PC"
 
+ ]
 
 ; *****************************************************************************
 
@@ -892,8 +895,8 @@ Configure82C710 ENTRY "r0,r1"
         STRB    lr, [r0, #CRI711Off]
         LDRB    lr, [r0, #CAP711Off]
         TEQ     lr, #&65
-        ADREQ   r1, ConfigSMCTable      ; different table for SMC 665
-        ADRNE   r1, Config711Table      ; R1-> 82C711 configuration data
+        LDREQ   r1, =ConfigSMCTable      ; different table for SMC 665
+        LDRNE   r1, =Config711Table      ; R1-> 82C711 configuration data
         Push    "lr"                    ; need to test for 665 again
 20
         LDRB    lr, [r1], #1            ; get config index
@@ -1051,13 +1054,13 @@ Configure37C665 ENTRY "r0,r1"
 
 defaultlatch *  20000-1 ; TMD 21-May-93: "-1" correction applied
 
-Tsyc    *       5       ; time between frames - minimum of 1µs, so give it a bit more
-Trstl   *       500     ; time reset pulse held low - minimum of 480µs, so give it a bit more
-Trsth   *       500     ; time reset pulse held high - minimum of 480µs, so give it a bit more
-Tlow0   *       80      ; time for write0 low - min 60µs, max 120µs
-Tlow1   *       5       ; time for write1 low - min 1µs, max 15µs
-Tslot   *       90      ; time for total read/write slot - min 60µs, max 120µs
-Trdlow  *       5       ; time for read slot low before release - min 1µs, max 15µs
+Tsyc    *       5       ; time between frames - minimum of 1ï¿½s, so give it a bit more
+Trstl   *       500     ; time reset pulse held low - minimum of 480ï¿½s, so give it a bit more
+Trsth   *       500     ; time reset pulse held high - minimum of 480ï¿½s, so give it a bit more
+Tlow0   *       80      ; time for write0 low - min 60ï¿½s, max 120ï¿½s
+Tlow1   *       5       ; time for write1 low - min 1ï¿½s, max 15ï¿½s
+Tslot   *       90      ; time for total read/write slot - min 60ï¿½s, max 120ï¿½s
+Trdlow  *       5       ; time for read slot low before release - min 1ï¿½s, max 15ï¿½s
 Trddat  *       3       ; time after read slot high before read it
 
         ASSERT  Tslot-Tlow0 > Tsyc

@@ -18,7 +18,7 @@ DoVdu23_0_12   SETL  {FALSE}
 BleedinDaveBell SETL {TRUE}
 
         GBLL    LCDPowerCtrl
-LCDPowerCtrl    SETL {TRUE}
+LCDPowerCtrl    SETL (MEMM_Type = "ARM600")    ; LCD power control is Stork/A4 (ARM600) only
 
         GET s.vdu.VduDecl
         GET s.vdu.VduGrafDec
@@ -576,8 +576,10 @@ VduBadExit                              ; jumped to if an error in VDU code
 
 ModeChangeSub ROUT
         Push    lr
+ [ LCDPowerCtrl
         MOV     r1, #0
         STRB    r1, [r1, #LCD_Active]   ;Default to non-lcd active, single panel (mainly for Stork power-saving info)
+ ]
         MOV     R1, #Service_PreModeChange
         IssueService
         TEQ     R1, #0                  ; was service claimed ?
@@ -3215,5 +3217,9 @@ SWISetColour ROUT
         ORRNE   R0, R0, #setcol_FgBgFlag
         ORR     R0, R0, #setcol_PatternFlag
         B       %BT77
+
+ [ :LNOT: ModeSelectors
+        MakeErrorBlock ModeNotAvailable         ; vduswis references this even without mode selectors
+ ]
 
         END

@@ -175,13 +175,11 @@ System_Swi_Names
         AddSwiNameToDecodeTab Reset
         AddSwiNameToDecodeTab MMUControl
         AddSwiNameToDecodeTab ResyncTime
- [ StrongARM
         AddSwiNameToDecodeTab PlatformFeatures
         AddSwiNameToDecodeTab SynchroniseCodeAreas
         AddSwiNameToDecodeTab CallASWI
         AddSwiNameToDecodeTab AMBControl
         AddSwiNameToDecodeTab CallASWIR12
- ]
         = 0
 
  [ SwisInSystemTable+1 <> MaxSwi

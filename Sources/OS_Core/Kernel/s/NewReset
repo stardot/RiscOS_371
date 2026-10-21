@@ -1543,7 +1543,11 @@ WallopDuffOnes
         SUBEQ   R0, R0, R7              ; previous entries
         ADDNE   R0, R0, R7              ; next entries
         MOV     R2, #SysHeapChunkAddress
+ [ MEMM_Type = "ARM600"
         MOV     r1, #AP_SysHeap :OR: PageFlags_Unavailable
+ |
+        MOV     r1, #AP_SysHeap
+ ]
         BL      AddCamEntries
 
  [ MEMM_Type = "ARM600"
@@ -1935,9 +1939,13 @@ furtherpoke_notSA
         BEQ     SkipHardResetPart2
 
 ; HardResetPart2
+ [ MEMM_Type = "ARM600"
         BL      L1L2PTenhancements      ; little tricks on cacheability etc for performance
+ ]
         BL      InitVariables
+ [ MEMM_Type = "ARM600"
         BL      AMBControl_Init         ; initialise AMBControl section
+ ]
         BL      ModuleInit              ; initialise modules
                                         ; scan podules, copy modules.
 
@@ -1988,8 +1996,10 @@ furtherpoke_notSA
         SWI     XOS_NewLine
   ]
         SWI     XOS_EnterOS             ; switch back to SVC mode (IRQs, FIQs enabled)
-  [ RO371Timings
+  [ MEMM_Type = "ARM600"
+   [ RO371Timings
         BL      finalmemoryspeed
+   ]
   ]
 ; end of added code
 
