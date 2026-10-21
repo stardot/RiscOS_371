@@ -304,6 +304,8 @@ gotsizeandshrink
         MOVNE   r11, #ChangeDyn_FreeAndApl              ; else make src indicator reflect that we need both
         MOVNE   r5, r2                                  ; but save amount we are taking from freepool
         B       %FT10
+ |
+        B       %FT10                                   ; no free pool on this machine, so move what we can
  ]
 
  [ (:LNOT: NewStyle_SysHeap) :LOR: (:LNOT: NewStyle_RMA)
