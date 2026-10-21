@@ -44,13 +44,21 @@ FixLoaderBug    SETL    True
         ; form of the podule manager, and should be changed with care.
 
                 GBLA    NumberOfPodules                 ; Excluding the network podule
-NumberOfPodules SETA    8
+ [       MEMM_Type = "ARM600"
+NumberOfPodules SETA    8                               ; Risc PC/A7000: 8 logical podule slots
+ |
+NumberOfPodules SETA    4                               ; Archimedes: 4 podule slots
+ ]
 
                 GBLL    NetworkPodule
 NetworkPodule   SETL    True
 
                 GBLL    EASISpace
-EASISpace       SETL    True
+ [       MEMM_Type = "ARM600"
+EASISpace       SETL    True                            ; IOMD machines have EASI space
+ |
+EASISpace       SETL    False                           ; MEMC1 machines have no EASI space
+ ]
 
                 GBLL    ExtensionROMs
 ExtensionROMs   SETL    False
