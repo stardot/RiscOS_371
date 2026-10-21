@@ -80,5 +80,8 @@ SoundDMABufferSize  *     &1000
                     ^ &01F06000
 SoundDMABuffers     #     SoundDMABufferSize * 2
 
+TopOfDMAWorkSpace   *     SoundDMABuffers + SoundDMABufferSize * 2
+TopOfDMAPhysRAM     *     &80000
+
         OPT     OldOpt
         END

@@ -311,9 +311,6 @@ MinOSPeriod     *       40              ; do not oversample if period < 40 (f > 
 ; Physical address of sound DMA buffers is not fixed on IOMD systems, but
 ; needs to be determined at initialisation time.
  |
-; On MEMC systems the DMA buffers are at a fixed physical address.
-TopOfDMAPhysRAM *       &80000
-TopOfDMAWorkSpace *     SoundDMABuffers + SoundDMABufferSize*2
 SoundPhysBuffers * TopOfDMAPhysRAM - (TopOfDMAWorkSpace-SoundDMABuffers)
  ]
 
