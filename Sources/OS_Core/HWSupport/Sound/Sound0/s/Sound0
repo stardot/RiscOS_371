@@ -161,6 +161,11 @@ VarSndClock     SETL    {FALSE}
         GBLL    SpkrControl
 SpkrControl     SETL    IO_Type = "IOC-A1" :LOR: IO_Type = "IOC-A500" :LOR: IO_Type = "IOEB"
 
+ [ SpkrControl
+; Page zero soft copy of the IOC control register (see Hdr:Old.NewSpace).
+IOCControlSoftCopy *    &0106
+ ]
+
  [ MEMC_Type = "IOMD"
 
 ; On IOMD-based systems, to support sound DMA "cheaply" in terms of
@@ -306,6 +311,9 @@ MinOSPeriod     *       40              ; do not oversample if period < 40 (f > 
 ; Physical address of sound DMA buffers is not fixed on IOMD systems, but
 ; needs to be determined at initialisation time.
  |
+; On MEMC systems the DMA buffers are at a fixed physical address.
+TopOfDMAPhysRAM *       &80000
+TopOfDMAWorkSpace *     SoundDMABuffers + SoundDMABufferSize*2
 SoundPhysBuffers * TopOfDMAPhysRAM - (TopOfDMAWorkSpace-SoundDMABuffers)
  ]
 
@@ -1226,9 +1234,11 @@ JumpTable
         B       Sound0Enable            ; enable control
         B       Sound0Stereo            ; stereo positioning
         B       Sound0Speaker           ; loudspeaker control
+ [ VIDC_Type = "VIDC20"
         B       Sound0Mode              ; mode control/status (16-bit/mu-law etc)
         B       Sound0LinearHandler     ; 16-bit sound generator interface
         B       Sound0SampleRate        ; new sample rate control interface
+ ]
 EndOfJumpTable
 
 ; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1546,7 +1556,7 @@ process_oversample ENTRY "r1,r2"
 
 ; now update the required VIDCSFR to be this value
 
-        STRB    r1, [r10, #VIDCSFR_N]   ; record the value for prog'ing
+        STRB    r2, [r10, #VIDCSFR_N]   ; record the value for prog'ing
         MOV     r2, r2, LSL r0          ; compute inter-sample period for one channel
 
  [ VarSndClock
