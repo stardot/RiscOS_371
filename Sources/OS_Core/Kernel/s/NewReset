@@ -532,6 +532,15 @@ vcofix_notMorris
         BL      TimeCPU                 ; r7 := CPU speed in kHz/MEMC1a flag
    ]
 
+ [ MEMM_Type <> "ARM600"
+; Re-derive the page size from the MEMC CR value, as 3.11 does, so that we
+; do not depend on r8 surviving the timing code. (ARM600 has no MEMC, and
+; takes its page size straight from MemSize.)
+        LDR     r3, =PageSizes
+        AND     r2, r9, #&0C
+        LDR     r8, [r3, r2]
+ ]
+
 ; first ensure nothing dangerous in MEMC
 
  [ MEMM_Type <> "ARM600"                ; all this stuff is done in MemSize
