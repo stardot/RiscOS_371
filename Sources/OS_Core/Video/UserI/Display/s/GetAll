@@ -12,6 +12,7 @@ Module_BaseAddr
         GET     Hdr:ListOpts
         GET     Hdr:Macros
         GET     Hdr:System
+        GET     Hdr:Machine.<Machine>   ; for MEMM_Type (Medusa = RISC PC)
         GET     Hdr:ModHand
         GET     Hdr:Services
         GET     Hdr:Wimp
@@ -54,7 +55,9 @@ icon            SETD    false
 standalone      SETL    false
 
                 GBLL    Medusa
-Medusa          SETL    true
+; Medusa is the RISC PC (ARM600/IOMD). Archimedes-class machines have no
+; OS_ScreenMode/ScreenModes support, so build the legacy mode list instead.
+Medusa          SETL    (MEMM_Type = "ARM600")
 
                 GBLL    SelectFrameRate
 SelectFrameRate SETL    true

@@ -8,7 +8,7 @@
 
 ;whether to delegate task memory management to AMBControl
         GBLL    UseAMBControl
-UseAMBControl SETL {TRUE}
+; value is set after the headers have been read (it depends on MEMM_Type)
 
 ;SWI code for AMBControl (X version) - could be a module, could be in kernel
 AMBControl_SWI * &20070
@@ -24,6 +24,7 @@ Module_BaseAddr
         GET     Hdr:ListOpts
         GET     Hdr:Macros
         GET     Hdr:System
+        GET     Hdr:Machine.<Machine>   ; for MEMM_Type
         GET     Hdr:CMOS
         GET     Hdr:PublicWS               ; for SvcTable
         GET     Hdr:ModHand
@@ -53,6 +54,9 @@ Module_BaseAddr
         GET     hdr:PDriver
 
         GET     Version
+
+; AMBControl only exists on ARM600 machines (application memory blocks).
+UseAMBControl   SETL    (MEMM_Type = "ARM600")
 
         GET     hdr.WIMPMacros
 
