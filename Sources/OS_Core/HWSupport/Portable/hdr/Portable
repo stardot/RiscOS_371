@@ -143,7 +143,14 @@ PortableStatus_DocStationConnected *    1 :SHL: 0
 PortableStatus_PrinterFloppy    *       1 :SHL: 1
 PortableStatus_LCDOn            *       1 :SHL: 3
 
- [ :DEF: MorrisSupport
+ ; Default for components that include this header without a machine header
+ ; (WindowManager, TaskManager, Econet, ScreenBlanker).
+ [ :LNOT: :DEF: MorrisSupport
+        GBLL    MorrisSupport
+MorrisSupport   SETL    {FALSE}
+ ]
+
+ [ MorrisSupport
 ;******************************************************************************
 ;
 ; Hardware latches in PCMCIA ASIC and Morris that control
