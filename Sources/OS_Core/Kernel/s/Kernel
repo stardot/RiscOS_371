@@ -613,19 +613,19 @@ JTABLE  & SWIWriteC             ; this entry never gets used (see ^)
         & NoSuchSWI
  ]
         & ResyncTimeSWI
+        & PlatFeatSWI
  [ StrongARM
-        & PlatFeatSWI  
         & SyncCodeAreasSWI
-        & CallASWI
-        & AMBControlSWI
-        & CallASWIR12
  |
-        & NoSuchSWI
-        & NoSuchSWI
-        & NoSuchSWI
-        & NoSuchSWI
-        & NoSuchSWI
+        & SyncCodeAreasARM3             ; ARM2/ARM3: unified cache, nothing to flush
  ]
+        & CallASWI
+ [ StrongARM
+        & AMBControlSWI
+ |
+        & NoSuchSWI                     ; AMBControl is ARM600-only
+ ]
+        & CallASWIR12
 
 
 MaxSwi * (.-JTABLE)/4
@@ -643,6 +643,15 @@ DirtyBranch
 ; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;StrongARM needs these
+
+ [ :LNOT: StrongARM
+;OS_SynchroniseCodeAreas on ARM2/ARM3. The ARM3 cache is unified, so code
+;written through the data cache is visible to instruction fetches: nothing
+;to do but return.
+SyncCodeAreasARM3
+        BIC     lr, lr, #V_bit
+        B       SLVK
+ ]
 
 ;SWI number passed in r10
 CallASWI ROUT
@@ -1345,20 +1354,24 @@ Issue_Service_SWI ROUT
 ; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; SWI XOS_PlatformFeatures
 
- [ StrongARM
 PlatFeatSWI ROUT
         Push    lr
         CMP     r0, #0                  ;Is it a known reason code?
         BNE     %FT50                   ;No, so send out a service call
 
         ;Ok, it's the 'code_features' reason code.
+ [ StrongARM
         LDRB    r0,[r0, #ProcessorFlags]
         TST     r0, #2                  ;Is the 'no irq enable/disable' bit set?
         ADRNE   r1, platfeat_irqinsert  ;Yep, so point R1 to the delay routine
         MOVEQ   r1, #0
+ |
+        MOV     r1, #0                  ;No special delay needed on ARM2/ARM3
+ ]
         Pull    lr
         B       SLVK                    ;Return
 
+ [ StrongARM
 platfeat_irqinsert
         MOV     r0, r0
         MOV     r0, r0
@@ -1366,6 +1379,7 @@ platfeat_irqinsert
         MOV     r0, r0
         MOV     r0, r0
         MOV     pc, lr
+ ]
 
 50
   [ {FALSE}
@@ -1388,7 +1402,6 @@ platfeaterror
         DCD     0
         DCB     "bad OS_PlatformFeatures reason code",0
         ALIGN
- ]
 
 ; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; SWI OS_GenerateError
