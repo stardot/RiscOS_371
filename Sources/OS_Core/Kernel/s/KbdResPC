@@ -112,7 +112,7 @@ uC_Status_OBF                   EQU     1 :SHL: 1       ;
         MOV     R1, #IOMD_Network_IRQ_bit       ; manager
         STRB    R1, [R0, #IOCIRQMSKB]
 
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         MOV     R1, #4
         STRB    R1, [R0, #Port3Present]
 35
@@ -130,7 +130,7 @@ uC_Status_OBF                   EQU     1 :SHL: 1       ;
         MOV     R1, #IOMD_MouseRxFull_IRQ_bit
         STRB    R1, [R0, #IOMD_IRQMSKD]
 
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         MOV     R1, #2
         STRB    R1, [R0, #Port2Present]
 30
@@ -145,7 +145,7 @@ uC_Status_OBF                   EQU     1 :SHL: 1       ;
         STRNEB  r1, [r0, #IOData]
         BEQ     %BT10
 
-        MOV     r0, #InitKbdWs
+        LDR     r0,=InitKbdWs
         ADR     r1, KeyData
         STR     r1, [r0, #KeyDataPtr]
 
@@ -181,7 +181,7 @@ SetUpKbd
         MOV     R1, #IOMD_MouseRxFull_IRQ_bit
         STRB    R1, [R0, #IOMD_IRQMSKD]
 
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         MOV     R1, #2
         STRB    R1, [R0, #Port2Present]
   [ 1 = 1
@@ -223,13 +223,13 @@ uC_Status_OBF                   EQU     1 :SHL: 1       ;
         MOV     R1, #IOMD_Network_IRQ_bit       ; manager
         STRB    R1, [R0, #IOCIRQMSKB]
 
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         MOV     R1, #4
         STRB    R1, [R0, #Port3Present]
   ]
 30
  ]
-        MOV     r0, #InitKbdWs
+        LDR     r0,=InitKbdWs
         ADR     r1, KeyData
         STR     r1, [r0, #KeyDataPtr]
 

@@ -931,6 +931,11 @@ PortableFlag        #  1                ; Non-zero => got an error from Portable
 LCD_Active          #  1                ; bm 6: 0 external CRT, 1 mono, 2 passive colour, 3 active colour
                                         ; bit 7: set => dual panel
 
+; Workspace for the reset-time keyboard IRQ code (see NewReset). This used to
+; be defined as PhysRam, but on these machines that aliases to address zero and
+; clashes with the processor vector table, so keep it in real workspace.
+InitKbdWs           #  16               ; (was 12, changed for Morris)
+
         AlignSpace
 
 MOSConvertBuffer    #  12               ; Enough romm for 8 hex digits.

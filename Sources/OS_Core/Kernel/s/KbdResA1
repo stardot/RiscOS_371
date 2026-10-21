@@ -87,7 +87,7 @@ IRQ_Test_CTRL_or_R_Pressed ROUT
         CMP     R11, #RST2ACK
         BNE     keytransmission
 
-        MOV     R10, #InitKbdWs
+        LDR     R10,=InitKbdWs
         LDR     R10, [R10, #KeyDataPtr]
         CMP     R10, #0
         MOVNE   R10, #ACK+SCAN
@@ -112,16 +112,16 @@ IRQ_Test_CTRL_or_R_Pressed ROUT
   [ Keyboard_Type = "A1A500"
         AND     r10, r11, #&F0
         CMP     R11, #IDTYPE            ; a500 kbd?
-        ADREQ   R10, DataA500Kbd
+        LDREQ   R10, =DataA500Kbd
         BEQ     gotkbdid
   ]
         SUB     r11, r11, #K1kbid + 1
         CMP     r11, #30
-        ADRLSL  R10, DataA1Kbd          ; only accept ID 1-31
+        LDRLS   R10, =DataA1Kbd          ; only accept ID 1-31
         MOVHI   R10, #0                 ; else don't know
 
 gotkbdid
-        MOV     R11, #InitKbdWs
+        LDR     R11,=InitKbdWs
         STR     R10, [R11, #KeyDataPtr]
  [ Keyboard_Type = "A1A500"
  ASSERT (DataA1Kbd :AND: 255) <> 0
@@ -136,11 +136,11 @@ gotkbdid
 
 keytransmission
 ; assume it's key info
-        MOV     R10, #InitKbdWs
+        LDR     R10,=InitKbdWs
         LDRB    R10, [R10]      ; the "had a byte" flag
         CMP     R10, #0
         BNE     hadabyteofkey
-        MOV     R10, #InitKbdWs
+        LDR     R10,=InitKbdWs
         STRB    R11, [R10]      ; first part of 2 byte protocol: set flag
         MOV     R10, #ACK+&F
         B       send_ack_byte
@@ -163,7 +163,7 @@ kickthebastardagain
 
 hadabyteofkey
 ; now got 1st byte in R10, second byte in R11 : test for CTRL or R
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         LDR     R0, [R0, #KeyDataPtr]
 10      LDRB    R1, [R0], #1
         CMP     R1, #0
@@ -173,7 +173,7 @@ hadabyteofkey
         CMPEQ   R1, R11
         LDRB    R1, [R0], #1
         BNE     %BT10
-        MOV     R11, #InitKbdWs
+        LDR     R11,=InitKbdWs
         STRB    R1, [R11, R1]           ; non-zero means pressed
 11
         MOV     R10, #ACK+SCAN
@@ -191,7 +191,7 @@ send_ack_byte
 
         STRB    R10, KARTTx             ; assume always able to transmit?
         CMP     R10, #ACK+&F
-        MOVNE   R11, #InitKbdWs
+        LDRNE   R11,=InitKbdWs
         STRNEB  R11, [R11]            ; clear "one byte of 2 byte seq had" flag
 
         Pull    "r0-r2, R10-R12, lr"

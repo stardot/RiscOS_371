@@ -30,14 +30,10 @@ UnusedByte4     # 1
 
  [ MEMM_Type = "ARM600"
 
-; On ARM600, InitKbdWs is in zero page - check it's big enough
+; InitKbdWs is now defined in the workspace headers (Hdr:KernelWS for ARM600,
+; Hdr:Old.NewSpace for MEMC1) - check it's big enough
 
         ASSERT  @ <= ?InitKbdWs
- |
-
-; Else use PhysRam start
-
-InitKbdWs       *       PhysRam
  ]
 
  [ MEMM_Type <> "ARM600"
@@ -631,7 +627,7 @@ noarm3
 
 ; now keyboard initialisation: initialise baud rate, send dummy, read dummy
 
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         MOV     R1, #0
         STRB    R1, [R0, #CTRL_Down_Flag] ; clear CTRL down flag, R down flag
         STRB    R1, [R0, #SHIFT_Down_Flag]
@@ -700,8 +696,9 @@ vectorpoke_notSA_1
         MOV     R1, #0                  ; could have been changed by keyboard initialisation
         STR     R0, [R1, #&18]          ; but hopefully by the same value!
 
-        TEQP    pc, #SVC_mode           ; Enable interrupts, back to supervisor mode
-        NOP
+        TEQP    pc, #SVC_mode + I_bit   ; Back to supervisor mode, but keep IRQs off
+        NOP                             ; (they are enabled once RAM has been cleared,
+                                        ;  so the keyboard reset IRQ can't race ClearPhysRAM)
  ]
 
 
@@ -896,9 +893,11 @@ KeyWait * 200000                 ; 1/5 sec wait (in microseconds)
 
     [ KeyWait <> 0
 ; Check for keyboard there every 1/5 sec. but give up after 2 secs.
+        TEQP    pc, #SVC_mode           ; Enable interrupts now that RAM is clear
+        NOP
         MOV     r2, #IOC
         MOV     r3, #10                 ; Check for keyboard 10 times (2 secs max).
-        MOV     r4, #InitKbdWs
+        LDR     r4,=InitKbdWs
 kbdwait
         LDRB    r5, [r4, #KB_There_Flag]
         LDR     r0, =KeyWait*2          ; Wait 1/5 second (give keys down a chance to come in).
@@ -932,7 +931,7 @@ kbdthere
         BEQ     no_cmos_reset           ; if zero then CMOS is protected
  ]
 
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         LDR     R7, [R0, #R_Down_Flag]
         CMP     R7, #0
         BEQ     no_cmos_reset           ; power on bit checked again there
@@ -992,7 +991,7 @@ skipskipforTC
 pounds_bleeding_Caspell
 
 ; IF R or Delete pressed THEN set sync 0 ELSE set sync Auto
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         LDRB    R1, [R0, #R_Down_Flag]
         CMP     R1, #0
         LDREQB  R1, [R0, #Del_Down_Flag]
@@ -1247,7 +1246,7 @@ CamCheck
 
 ; leave CTRL test till last, so the keyboard's had as much time to
 ; wiggle the wet string as we can give it
-        MOV     R0, #InitKbdWs
+        LDR     R0,=InitKbdWs
         LDRB    R1, [R0, #CTRL_Down_Flag]
         CMP     R1, #0
         BNE     hard_reset
@@ -1835,7 +1834,7 @@ ResetPart1Done                          ; R0 is reset type
         LDR     R1, =OsbyteVars + :INDEX: LastBREAK
         STRB    R0, [R1]
 
-        MOV     R1, #InitKbdWs
+        LDR     R1,=InitKbdWs
         LDRB    R0, [R1, #KB_There_Flag]
         LDRB    R1, [R1, #SHIFT_Down_Flag]
         Push    "R0, R1"                ; save until after MOSInit
