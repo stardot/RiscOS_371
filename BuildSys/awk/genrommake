@@ -32,6 +32,11 @@ END {
 
     printf("SRCDIR  = <src$dir>\n")
     printf("INSTDIR = <install$dir>\n")
+    # If there is no C library component, there is no CLibDir to install
+    # into. Use the conventional directory anyway, so that the "dirs" rule
+    # does not try to create a path with an empty leaf name.
+    if (CLibDir == "")
+        CLibDir = "ROM.Lib"
     printf("CLIBDIR = <install$dir>.%s\n", CLibDir)
     printf("ABSSYM  = RISC_OSLib:o.AbsSym\n")
     printf("\n")
