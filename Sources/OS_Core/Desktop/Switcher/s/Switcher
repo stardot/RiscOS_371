@@ -2116,11 +2116,18 @@ gotcounts
         STRVC   r1, [sp, #6*4]
         LDRB    R0,medusa_kernel
         CMP     R0,#0
-        BEQ     %FT05
+        BEQ     %FT04
         MOV     r0,#6+128                   ; freepool
         SWI     XOS_ReadDynamicArea
-        STRVC   r1, [sp, #7*4]
+        STRVC   r1, [sp, #7*4]               ; applications (free)
         STRVC   r2, [sp,#nareas*4]           ; total memory in system
+        B       %FT05
+04
+; Not a Medusa kernel: there is no free pool to ask about, so derive the
+; totals from the machine's real memory and the application slot figures.
+        SWI     XOS_ReadMemMapInfo          ; r0 = page size, r1 = no of pages
+        MUL     r1, r0, r1
+        STR     r1, [sp,#nareas*4]           ; total memory in system
 05
         MOV     r1,#0                   ; add up used memory
         MOV     r0,#ic_taskname
@@ -2135,7 +2142,15 @@ gotcounts
         BEQ     %BT33
 35
         CLRV
-        STR     r1,[sp,#8*4]
+        STR     r1,[sp,#8*4]                 ; applications (used)
+        LDRB    R0,medusa_kernel
+        CMP     R0,#0
+        BNE     %FT36
+        MOV     R0,#ic_freename              ; free application space, as
+        BL      findblock                    ; worked out by calc_slotsize
+        LDRVC   r1,[userblk,#icb_memsize]
+        STRVC   r1,[sp,#7*4]                 ; applications (free)
+36
  ]
 ;
         MOV     R0,#ic_sys1
