@@ -194,7 +194,7 @@ DoDefinePointer ;Only copies the pointer defn into the defn buffer. OSByte 6A no
 10
         Pull    "R1-R6,PC"
  |                              ;BELOW MUST BE UNINDENTED BY 4CHARS TO WORK AGAIN!!!!!!!
-    DoDefinePointer
+DoDefinePointer
             Push    "R1-R6, R14"
      [ Fix8
             CLRPSR  I_bit, R0                       ; could take some time
@@ -243,11 +243,11 @@ DoDefinePointer ;Only copies the pointer defn into the defn buffer. OSByte 6A no
             LDR     R3, =CursorData                 ; &200 per shape, so
             ADD     R3, R3, R6, LSL #9              ; R3 -> first copy
             ADD     R6, R3, #&F8                    ; R6 -> second copy
-    20
+20
             ADD     R4, R3, R0                      ; terminating R3 for this row
-    30
+30
             LDRB    R5, [R1], #1
-    40
+40
             STRB    R5, [R3], #1                    ; store to 1st copy
             STRB    R5, [R6], #1                    ; store to 2nd copy
             CMP     R3, R4                          ; still within user data
@@ -262,7 +262,7 @@ DoDefinePointer ;Only copies the pointer defn into the defn buffer. OSByte 6A no
             SUBS    R2, R2, #1                      ; done all rows ?
             BNE     %BT20                           ; no, then loop
 
-    10
+10
             Pull    "R1-R6,PC"
  ]
 
@@ -592,7 +592,7 @@ UpdatePointer ROUT
      ]
 
  |                              ;BELOW MUST BE UNINDENTED BY 4CHARS TO WORK AGAIN!!!!!!!
-    UpdatePointer ROUT
+UpdatePointer ROUT
             MOV     R11, #KeyWorkSpace
             MOV     R10, #VIDC
 
@@ -611,7 +611,7 @@ UpdatePointer ROUT
             LDRNEB  R0, [R6, #PointerHeights]
             TEQNE   R0, #0                  ; if shape 0 or height 0
             BNE     %FT07
-    05
+05
 
     ; don't display pointer
 
@@ -620,7 +620,7 @@ UpdatePointer ROUT
             MOV     R4, #0                  ; LAG offset := 0
             B       %FT10
 
-    07
+07
      [ VIDC_Type = "VIDC20"
 
             LDR     R2, [WsPtr, #PointerXEigFactor]
@@ -720,7 +720,7 @@ UpdatePointer ROUT
             BIC     R1, R1, #1              ; Y := (-Y AND NOT 1)
             ADD     R4, R4, R1, LSL #3      ; add on offset into shape
             MOV     R1, #0                  ; Y := 0
-    10
+10
             Push    "r1, r14"
      [ MEMC_Type = "IOMD"
             MOV     r0, #0

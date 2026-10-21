@@ -46,7 +46,7 @@ NewClockChip    SETL    {TRUE}
 MorrisSupport   SETL    {FALSE}
 
                 GBLL    PortableSupport         ; Portable module / LCD power control
-PortableSupport SETL    {FALSE}
+PortableSupport SETL    {TRUE}
 
                 GBLS    Keyboard_Type
 Keyboard_Type   SETS    "A1A500"

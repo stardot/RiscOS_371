@@ -365,7 +365,7 @@ NewStyle_All    SETL    NewStyle_RMA :LAND: NewStyle_SpriteArea :LAND: NewStyle_
 StorkPowerSave  SETL    MorrisSupport   ;False=> older A4 code only
 
                 GBLL    LCDSupport      ;Whether LCD Support is assembled in or not
-LCDSupport      SETL    {TRUE}          ;(First intro'd for Stork)
+LCDSupport      SETL    (VIDC_Type = "VIDC20") ;(First intro'd for Stork)
 
                 GBLL    FixR9CorruptionInExtensionSWI   ; whether R9 corruption by ExtensionSWI handler is fixed
 FixR9CorruptionInExtensionSWI   SETL    {FALSE}         ; currently FALSE as CC's !SpellMod (possibly others) rely on it being broken
