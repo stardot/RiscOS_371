@@ -42,6 +42,9 @@ GetMEMM         SETS    "GET Hdr:MEMM.MEMC1"
                 GBLL    NewClockChip
 NewClockChip    SETL    {TRUE}
 
+                GBLL    MorrisSupport
+MorrisSupport   SETL    {FALSE}
+
                 GBLS    Keyboard_Type
 Keyboard_Type   SETS    "A1A500"
 

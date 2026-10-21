@@ -38,6 +38,7 @@ COMPONENT = HdrSrc
 
 EXPORTS   = \
  ${HDRDIR}.CMOS \
+ ${HDRDIR}.CPU.ARM3 \
  ${HDRDIR}.CPU.ARM600 \
  ${HDRDIR}.CPU.Generic26 \
  ${HDRDIR}.DDVMacros \
@@ -58,6 +59,8 @@ EXPORTS   = \
  ${HDRDIR}.IO.IOMDL \
  ${HDRDIR}.KEYV \
  ${HDRDIR}.ListOpts \
+ ${HDRDIR}.MEMC.MEMC1a \
+ ${HDRDIR}.Machine.A5000 \
  ${HDRDIR}.MEMM.ARM600 \
  ${HDRDIR}.MEMM.MEMC1 \
  ${HDRDIR}.Machine.Jordan \
@@ -109,6 +112,7 @@ Dirs:
         ${MKDIR} ${HDRDIR}.Machine
         ${MKDIR} ${HDRDIR}.MEMM
         ${MKDIR} ${HDRDIR}.VIDC
+        ${MKDIR} ${HDRDIR}.MEMC
 
 clean:
          @echo ${COMPONENT}: NOT cleaning derived headers
@@ -145,10 +149,12 @@ ${HDRDIR}.Services: Register.Services;         ${CP} Register.Services $@ ${CPFL
 ${HDRDIR}.UpCall: Register.UpCall;             ${CP} Register.UpCall $@ ${CPFLAGS}
 
 # Machine/hardware specific headers:
+${HDRDIR}.Machine.A5000: hdr.Machine.A5000;  ${CP} hdr.Machine.A5000 $@ ${CPFLAGS}
 ${HDRDIR}.Machine.Jordan: hdr.Machine.Jordan;  ${CP} hdr.Machine.Jordan $@ ${CPFLAGS}
 ${HDRDIR}.Machine.Morris: hdr.Machine.Morris;  ${CP} hdr.Machine.Morris $@ ${CPFLAGS}
 ${HDRDIR}.ImageSize.2048K: hdr.ImageSize.2048K; ${CP} hdr.ImageSize.2048K $@ ${CPFLAGS}
 ${HDRDIR}.ImageSize.4096K: hdr.ImageSize.4096K; ${CP} hdr.ImageSize.4096K $@ ${CPFLAGS}
+${HDRDIR}.CPU.ARM3: hdr.CPU.ARM3;          ${CP} hdr.CPU.ARM3 $@ ${CPFLAGS}
 ${HDRDIR}.CPU.ARM600: hdr.CPU.ARM600;          ${CP} hdr.CPU.ARM600 $@ ${CPFLAGS}
 ${HDRDIR}.CPU.Generic26: hdr.CPU.Generic26;    ${CP} hdr.CPU.Generic26 $@ ${CPFLAGS}
 ${HDRDIR}.FDC.FDC711: hdr.FDC.FDC711;          ${CP} hdr.FDC.FDC711 $@ ${CPFLAGS}
@@ -158,6 +164,7 @@ ${HDRDIR}.IO.IOC-A1: hdr.IO.IOC-A1;            ${CP} hdr.IO.IOC-A1 $@ ${CPFLAGS}
 ${HDRDIR}.IO.IOEB: hdr.IO.IOEB;                ${CP} hdr.IO.IOEB $@ ${CPFLAGS}
 ${HDRDIR}.IO.IOMD: hdr.IO.IOMD;                ${CP} hdr.IO.IOMD $@ ${CPFLAGS}
 ${HDRDIR}.IO.IOMDL: hdr.IO.IOMDL;              ${CP} hdr.IO.IOMDL $@ ${CPFLAGS}
+${HDRDIR}.MEMC.MEMC1a: hdr.MEMC.MEMC1a;        ${CP} hdr.MEMC.MEMC1a $@ ${CPFLAGS}
 ${HDRDIR}.MEMM.ARM600: hdr.MEMM.ARM600;        ${CP} hdr.MEMM.ARM600 $@ ${CPFLAGS}
 ${HDRDIR}.MEMM.MEMC1: hdr.MEMM.MEMC1;          ${CP} hdr.MEMM.MEMC1 $@ ${CPFLAGS}
 ${HDRDIR}.VIDC.VIDC1a: hdr.VIDC.VIDC1a;        ${CP} hdr.VIDC.VIDC1a $@ ${CPFLAGS}
