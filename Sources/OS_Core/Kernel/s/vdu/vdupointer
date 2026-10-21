@@ -503,7 +503,7 @@ UpdatePointer ROUT
 10
 
         Push    "r5,r14"
-     [ VIDC_Type = "VIDC20"
+     [ LCDPowerCtrl
         ;Rightio, it's time to muck about if we're on a dual-panel LCD...
         MOV     r14, #0
         LDRB    r14, [r14, #LCD_Active]
@@ -552,7 +552,7 @@ UpdatePointer ROUT
         BL      SetDAG
         Pull    "r1, r14"
 
-     [ VIDC_Type = "VIDC20"
+     [ LCDPowerCtrl
         CMP     R14, #CursorStraddle
         BEQ     %FT13                   ;It's a cursor straddly thingy, so we've to muck the VCSR & VCER up...
      ]
@@ -572,7 +572,7 @@ UpdatePointer ROUT
         Pull    "r5,r14"
         MOV     PC, R14
 
-     [ VIDC_Type = "VIDC20"
+     [ LCDPowerCtrl
 13
         LDR     R3, [WsPtr, #VertAdjust] ; get display start value
         ADD     R1, R1, R3              ; and add on

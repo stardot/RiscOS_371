@@ -56,6 +56,9 @@ Keyboard_Type   SETS    "PC"
                 GBLL    MorrisSupport
 MorrisSupport   SETL    {TRUE}
 
+                GBLL    PortableSupport         ; Portable module / LCD power control
+PortableSupport SETL    {TRUE}
+
                 GBLL    StorkPowerSave
 StorkPowerSave  SETL    {TRUE}
 

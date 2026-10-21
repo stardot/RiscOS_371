@@ -928,6 +928,8 @@ RawMachineID        #  8                ; 64 bits for unique machine ID
 KernelMessagesBlock #  20               ; 5 Words for messagetrans message block.
 ErrorSemaphore      #  1                ; Error semaphore to avoid looping on error translation.
 PortableFlag        #  1                ; Non-zero => got an error from Portable_Speed, so don't try it again
+LCD_Active          #  1                ; bm 6: 0 external CRT, 1 mono, 2 passive colour, 3 active colour
+                                        ; bit 7: set => dual panel
 
         AlignSpace
 

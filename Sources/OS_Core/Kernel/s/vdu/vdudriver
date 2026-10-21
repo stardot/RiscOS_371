@@ -18,7 +18,11 @@ DoVdu23_0_12   SETL  {FALSE}
 BleedinDaveBell SETL {TRUE}
 
         GBLL    LCDPowerCtrl
-LCDPowerCtrl    SETL (MEMM_Type = "ARM600")    ; LCD power control is Stork/A4 (ARM600) only
+ [ :LNOT: :DEF: PortableSupport
+        GBLL    PortableSupport                 ; machines with a Portable module
+PortableSupport SETL {TRUE}
+ ]
+LCDPowerCtrl    SETL PortableSupport            ; LCD power control needs the Portable module
 
         GET s.vdu.VduDecl
         GET s.vdu.VduGrafDec

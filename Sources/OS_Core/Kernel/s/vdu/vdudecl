@@ -67,11 +67,6 @@ PseudoRegister_ClockSpeed *     &FC000000       ; used to indicate real VIDC rcl
 PseudoRegister_DPMSState *      &FD000000       ; used to return desired DPMS state
 
 
-; Bits in VCSR, VCER
-CursorSinglePanel	*	0 :SHL: 13
-CursorTopPanel		*	1 :SHL: 13
-CursorBottomPanel	*	1 :SHL: 14
-CursorStraddle		*	3 :SHL: 13
 
 
 ; Bits in external register
@@ -162,6 +157,12 @@ CompSync        *       &80     ; Controls sync signal on CS/VS pin
 
 SupBit          *       &1000   ; Supremacy bit in palette
  ]
+
+; Bits in VCSR, VCER
+CursorSinglePanel	*	0 :SHL: 13
+CursorTopPanel		*	1 :SHL: 13
+CursorBottomPanel	*	1 :SHL: 14
+CursorStraddle		*	3 :SHL: 13
 
 PhysCursorStartAdr * CursorSoundPhysRAM
 
