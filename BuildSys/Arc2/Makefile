@@ -73,6 +73,7 @@ BUILD = \
  ARM \
  ADFSFiler \
  TaskManager \
+ Portable \
  Desktop \
  WindowManager \
  UK \
@@ -204,6 +205,13 @@ Desktop:
         @${MKDIR} ${INSTDIR}.ROM
         @${MKDIR} ${INSTDIR}.ROM.OS_Core
         @${CD} ${SRCDIR}.OS_Core.Desktop.Desktop
+        ${MAKE} INSTDIR=${INSTDIR}.ROM.OS_Core
+
+Portable:
+        @echo $@ ...
+        @${MKDIR} ${INSTDIR}.ROM
+        @${MKDIR} ${INSTDIR}.ROM.OS_Core
+        @${CD} ${SRCDIR}.OS_Core.HWSupport.PortableA4
         ${MAKE} INSTDIR=${INSTDIR}.ROM.OS_Core
 
 TaskManager:

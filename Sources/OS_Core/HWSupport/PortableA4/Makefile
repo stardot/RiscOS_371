@@ -53,6 +53,7 @@ clean:
         @echo ${COMPONENT}: cleaned
 
 ${TARGET}: ${SOURCE}
+        ${MKDIR} rm
         ${AS} ${ASFLAGS} ${SOURCE}
 
 ${EXP_HDR}.${COMPONENT}: hdr.${COMPONENT}

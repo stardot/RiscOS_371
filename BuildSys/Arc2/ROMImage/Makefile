@@ -76,6 +76,7 @@ MODULES = \
  ARM \
  ADFSFiler \
  Switcher \
+ Portable \
  Desktop \
  Wimp \
  UK \
@@ -146,6 +147,11 @@ Wimp:
 Desktop:
         @setolength File$Length ${INSTDIR}.ROM.OS_Core.Desktop
         @echo Desktop                    <PositionInRom>  <File$Length>
+        @seteval PositionInRom PositionInRom + ((File$Length + 3) AND NOT 3) + 4
+
+Portable:
+        @setolength File$Length ${INSTDIR}.ROM.OS_Core.Portable
+        @echo Portable                   <PositionInRom>  <File$Length>
         @seteval PositionInRom PositionInRom + ((File$Length + 3) AND NOT 3) + 4
 
 Switcher:

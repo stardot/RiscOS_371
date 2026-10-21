@@ -11,6 +11,7 @@
 <install$dir>.ROM.OS_Core.UK
 <install$dir>.ROM.OS_Core.Wimp
 <install$dir>.ROM.OS_Core.Desktop
+<install$dir>.ROM.OS_Core.Portable
 <install$dir>.ROM.OS_Core.Switcher
 <install$dir>.ROM.OS_Core.ADFSFiler
 <install$dir>.ROM.Arc.ARM

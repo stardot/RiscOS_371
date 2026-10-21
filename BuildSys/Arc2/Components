@@ -23,7 +23,7 @@ UK                    ASM     OS_Core.Internat.Territory.UK              ROM.OS_
 WindowManager         ASM     OS_Core.Desktop.Wimp                       ROM.OS_Core          Wimp
 Desktop               ASM     OS_Core.Desktop.Desktop                    ROM.OS_Core          Desktop
 #Mouse                 ASM     OS_Core.HWSupport.Mouse                    ROM.Arc              Mouse
-#Portable              ASM     OS_Core.HWSupport.Portable                 ROM.OS_Core          Portable
+Portable              ASM     OS_Core.HWSupport.PortableA4               ROM.OS_Core          Portable
 #PS2Driver             ASM     OS_Core.HWSupport.PS2Driver                ROM.Arc              PS2Driver
 TaskManager           ASM     OS_Core.Desktop.Switcher                   ROM.OS_Core          Switcher
 ADFSFiler             ASM     OS_Core.FileSys.ADFS.ADFSFiler             ROM.OS_Core          ADFSFiler
