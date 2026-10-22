@@ -1326,8 +1326,7 @@ EconetDebugSpace        |#|     &20 * 4 ; Thirty two words (&7F80)
 ; ***        Has the physical address &02078000, ie. 32M + 512K - 32K       ***
 ; *****************************************************************************
 
-TopOfDMAPhysRAM         *       &80000            ; OFFSET in physram
-TopOfDMAWorkSpace       *       CursorChunkAddress + 32*1024
+; TopOfDMAPhysRAM and TopOfDMAWorkSpace are defined in Hdr:PublicWS.
 OffsetLogicalToPhysical *       TopOfDMAPhysRAM - TopOfDMAWorkSpace
 
                         ^       TopOfDMAWorkSpace ; Note we will be going down

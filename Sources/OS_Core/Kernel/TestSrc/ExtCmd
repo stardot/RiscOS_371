@@ -848,6 +848,26 @@ cpr13	CN	13
 cpr14	CN	14
 cpr15	CN	15
 
+; Coprocessor transfer macros.  Hdr:MEMM.ARM600 supplies these for IOMD
+; machines; MEMC machines (ARM2/ARM3) also have coprocessor 15 and the same
+; encodings assemble, so define them here for those builds.
+ [ MEMM_Type <> "ARM600"
+
+Arm600Cop       CP      15
+CR_Dummy        CN      0
+
+        MACRO
+        SetCop  $reg, $cop, $cc
+        MCR$cc  Arm600Cop, 0, $reg, $cop, CR_Dummy
+        MEND
+
+        MACRO
+        ReadCop $reg, $cop, $cc
+        MRC$cc  Arm600Cop, 0, $reg, $cop, CR_Dummy
+        MEND
+
+ ]
+
 
 ; Called by vectoring through command table.
 ; Read transfer value

@@ -41,7 +41,14 @@ POSTenabled     SETL    {TRUE}          ; don't permit POST for ordinary startup
 ts_Rom_bits     *       21                              ; Widest ROM address
 ts_Rom_length   *       1 :SHL: ts_Rom_bits             ; Longest ROM
 ts_highaddr_bit *       1 :SHL: 25                      ; ARM address width
+        [ MEMM_Type = "ARM600"
 ts_Alias_bits   *       (1 :SHL: 23)                    ; I/F output bits
+        |
+; MEMC ROM is at &03800000: adding A23 exceeds the ARM2/3 address
+; range. With 4 MB ROMs, probe a known zero in the trailer rather than
+; an alias: A21 then selects ROM data when the link is absent.
+ts_Alias_bits   *       (3 :SHL: 21)
+        ]
 ts_recover_time *       (1 :SHL: 8)                     ; inter-twiddle delay
 ts_pause_time   *       200                             ; Display pause time
 ts_S5_base      *       &3350000                        ; IO register base address
@@ -109,10 +116,10 @@ R_LINFAILBIT    *       &20000          ; Page zero RAM failure
 R_MEMFAILBIT    *       &40000          ; Main RAM test failure
 R_CACFAILBIT    *       &80000          ; ARM 3 Cache test failure
 ;
- [ MorrisSupport
-Kludge * 96
+ [ ExtendedROMHeader
+POSTHeaderPrefixSize * 96
  |
-Kludge * 0
+POSTHeaderPrefixSize * 0
  ]
         SUBT    Exception vectors
 ;
@@ -125,9 +132,9 @@ Kludge * 0
 
 Reset
 ts_start
-        $DoMorrisROMHeader
+        $DoROMHeader
 
- [ :LNOT: MorrisSupport
+ [ :LNOT: ExtendedROMHeader
   [ ResetIndirected
         LDR     pc,.+ResetIndirection   ; load pc from vector at &118
   |
@@ -152,6 +159,12 @@ ts_CVECTORS     *       %BT02 - ts_start
 ts_DVECTORS     *       %BT03 - ts_start
 ts_BVECTORS     *       %BT04 - ts_start
 
+ [ ExtendedROMHeader
+        ASSERT  ts_ROMSIZE = &60
+        ASSERT  ts_CVECTORS = &64
+        ASSERT  ts_DVECTORS = &68
+        ASSERT  ts_BVECTORS = &6C
+ ]
  ! 0, "ts_Rom_length held at ":CC::STR:(%BT01 - ROM)
 
 
@@ -160,8 +173,8 @@ ts_BVECTORS     *       %BT04 - ts_start
 ;
 
 00
-        ASSERT  %B00 <= (ts_start + &2c + Kludge)
-        %       ((ts_start + &2c + Kludge) - %B00)
+        ASSERT  %B00 <= (ts_start + &2c + POSTHeaderPrefixSize)
+        %       ((ts_start + &2c + POSTHeaderPrefixSize) - %B00)
 
 ts_ID   &       ((TS_STATUS :SHL: 24) + (TS_RELEASE :SHL: 16) + TS_CHANGES)
 
@@ -215,8 +228,8 @@ ts_ROM_cvectors
 ;
 
 00
-        ASSERT  %B00 <= (ts_start + 128 + Kludge)
-        %       ((ts_start + 128 + Kludge) - %B00)
+        ASSERT  %B00 <= (ts_start + 128 + POSTHeaderPrefixSize)
+        %       ((ts_start + 128 + POSTHeaderPrefixSize) - %B00)
 
 ts_ROM_bvectors
         B       ts_RomPatt
@@ -709,7 +722,7 @@ ts_RomTest
         BL      ts_SendText             ; and report it.
 20
 
-        [ IO_Type = "IOC-A1"            ; Don't use RISC OS MemSize
+        [ MEMM_Type = "MEMC1"           ; Don't use RISC OS MemSize
                                         ; until much later - it sets up
                                         ; the ARM600 MMU as well.
         B       ts_MEMCset
@@ -1045,6 +1058,7 @@ RAMtest
         BL      ts_MoreText
         B       ts_Report
 12
+ [ MEMM_Type = "ARM600"
         LDR     r1,=C_RAMTEST           ; doing at least part of the long memory test
         LDR     r0,=ts_VIDCPhys         ; write the border colour
         STR     r1,[r0]
@@ -1149,6 +1163,10 @@ RAMtest
         MOV     r8,r11                  ; and fault data
         BL      ts_SendText
 21
+ |
+        ADR     r4,%BT3                 ; MEMC has line tests, not the ARM600 RAM test
+        BL      ts_MoreText
+ ]
 
  [ MEMM_Type = "MEMC1"
 
@@ -1216,6 +1234,11 @@ ts_CAMtest
 
 ts_restore_physical
 
+ [ MEMM_Type <> "ARM600"
+        B       ts_VIDCtest                     ; no MMU to restore on MEMC systems
+ ]
+
+ [ MEMM_Type = "ARM600"
   [ StrongARM_POST
     ;make sure ARM810 cache or StrongARM data cache is cleaned/flushed, because we are going to remap
         ARM_read_ID r5
@@ -1280,6 +1303,7 @@ ts_restore_physical
   ]
 
         B       ts_VIDCtest
+ ]
 
 ;
 ; The VIDC tests check vertical blanking frequency in a fixed video
@@ -1435,6 +1459,15 @@ ts_Report       ROUT
         MOV     r8,r7
         BL      ts_SendText             ; write the message and fault code
 
+        [ MEMM_Type = "MEMC1"
+        MOV     r2,#PhysROM
+        LDR     r3,[r2,#ts_ROMSIZE]
+        CMP     r3,#4*1024*1024
+        ADDCS   r2,r2,r3
+        SUBCS   r2,r2,#20
+        BCS     %FT01                   ; trailer zero, with A21 high
+        ]
+
         ; if the test adapter is present, leave green screen awhile
         ; otherwise, wait only if there's a fault.
 
@@ -1444,7 +1477,7 @@ ts_Report       ROUT
                                         ; from previous bus activity
         ADR     r2,ts_R00
         ORR     r2,r2,#ts_Alias_bits
-        LDR     r3,[r2]
+01      LDR     r3,[r2]
         MOV     r2,#-1
         ADDS    r3,r3,r2
         BCS     ts_Report_wait
@@ -1584,7 +1617,14 @@ ts_IOinitab
 
 ; Include test modules executed by call, rather than inline
 
-        GET     TestSrc.Mem2
+; Keep the conditional outside GET: aasm checks its nesting at the
+; included file's END directive.
+                GBLS    tsGetMem2
+tsGetMem2       SETS    ""
+ [ MEMM_Type = "ARM600"
+tsGetMem2       SETS    "GET TestSrc.Mem2"
+ ]
+                $tsGetMem2
         GET     TestSrc.Mem3
         GET     TestSrc.Mem4
         GET     TestSrc.Mem5

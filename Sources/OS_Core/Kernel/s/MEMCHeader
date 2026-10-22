@@ -1,0 +1,25 @@
+        SUBT    MEMC ROM entry header
+
+; Use the extended POST layout (ROM length at &60) with ARM2/ARM3 entry
+; instructions. MEMC has no IOMD ROM-width control to initialise.
+
+ [ ResetIndirected
+        LDR     pc, .+ResetIndirection
+ |
+        B       ts_RomPatt + PhysROM
+ ]
+        B       MEMCResetTrap          ; undefined instruction
+        B       MEMCResetTrap          ; SWI
+        B       MEMCResetTrap          ; prefetch abort
+        B       MEMCResetTrap          ; data abort
+        B       MEMCResetTrap          ; address exception
+        B       MEMCResetTrap          ; IRQ
+        B       MEMCResetTrap          ; FIQ
+
+MEMCResetTrap
+        B       MEMCResetTrap          ; no RAM exception handlers yet
+
+        ASSERT  .-ROM <= POSTHeaderPrefixSize
+        %       POSTHeaderPrefixSize-(.-ROM)
+
+        END

@@ -91,12 +91,22 @@ ts_GetCommand  ROUT
         ADD     pc,pc,r0  ;(test value : sets carry when added to non-zero)
 02
         &       (-1)
+        [ MEMM_Type = "MEMC1"
+; With 4 MB ROMs there is no A21 alias. Probe the known zero in the
+; ROM trailer instead: A21 is high there, so a fitted link suppresses it.
+        MOV     r2,#PhysROM
+        LDR     r2,[r2,#ts_ROMSIZE]
+        CMP     r2,#4*1024*1024
+        ADDCS   r2,r2,#PhysROM
+        SUBCS   r2,r2,#20
+        BCS     %FT90
+        ]
         LDR     r2,%03                  ; set pointer to test address
         ADD     pc,pc,r0  ;(points to aliased copy of a zero word)
 03
         &       (ts_Alias_bits + (%01 - %04))
         ADDS    r2,pc,r2                ; adjust r2 for ROM-relative address
-        ADDS    r4,r0,r0                ; clear output accumulator
+90      ADDS    r4,r0,r0                ; clear output accumulator
 04                                      ; where pc is when added to r2
 
         ; do an RD operation (four strobes) to ensure interface cleared
@@ -622,12 +632,20 @@ ts_SendLCDCmd
         ADD     pc,pc,r0  ;(test value : sets carry when added to non-zero)
 02
         &       (-1)
+        [ MEMM_Type = "MEMC1"
+        MOV     r2,#PhysROM
+        LDR     r2,[r2,#ts_ROMSIZE]
+        CMP     r2,#4*1024*1024
+        ADDCS   r2,r2,#PhysROM
+        SUBCS   r2,r2,#20
+        BCS     %FT90                   ; use the trailer zero for a 4 MB ROM
+        ]
         LDR     r2,%03                  ; set pointer to test address
         ADD     pc,pc,r0  ;(points to aliased copy of a zero word)
 03
         &       (ts_Alias_bits + (%01 - %04))
         ADDS    r2,pc,r2                ; adjust r2 for ROM-relative address
-        ADDS    r0,r0,r0                ; dummy (to keep labels nearby !)
+90      ADDS    r0,r0,r0                ; dummy (to keep labels nearby !)
 04                                      ; where pc points when added to r2
 
 

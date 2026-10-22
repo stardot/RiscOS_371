@@ -169,8 +169,7 @@ Module          SETL    {FALSE}
  [ MorrisSupport
 IncludeTestSrc  SETL    {TRUE}
  |
-IncludeTestSrc  SETL    (MEMM_Type = "ARM600") ; test source is ARM600-shaped (32-bit/CP15/L1-L2 PT);
-                                               ; not used on MEMC1 (A5000) or MEMC2
+IncludeTestSrc  SETL    (MEMM_Type = "ARM600") :LOR: (MEMM_Type = "MEMC1")
  ]
 
  [ RunningOnEmul
@@ -216,6 +215,10 @@ ChecksumCMOS    SETL  {TRUE}
 
                 GBLL    ResetIndirected ; new flag to say if instruction at start of ROM does LDR PC, [PC, #x]
 ResetIndirected SETL    {TRUE}
+
+                GBLL    ExtendedROMHeader
+; Header layout is independent of IOMD/Morris hardware support.
+ExtendedROMHeader SETL  (MorrisSupport :LOR: (MEMM_Type = "MEMC1"))
 
                 GBLL    SqueezeMods     ; whether squeezed modules are allowed
 SqueezeMods     SETL    {TRUE}

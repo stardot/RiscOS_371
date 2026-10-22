@@ -50,12 +50,18 @@ ts_IOCreg
         STR     r1,[r3,#ts_IOreg1]
         STR     r2,[r3,#ts_IOreg2]
         LDR     r4,[r3,#ts_IOreg1]
-;        EOR     r4, r4, r1, LSR #ts_IObswap     ; check bit-set test was OK
+        [ IO_Type = "IOMD"
         EOR     r4, r4, r1           ; check bit-set test was OK
+        |
+        EOR     r4, r4, r1, LSR #ts_IObswap
+        ]
         ORR     r0, r0, r4              ; accumulate errors in r0
         LDR     r4,[r3,#ts_IOreg2]
-;        EOR     r4, r4, r2, LSR #ts_IObswap     ; check bit-clear test was OK
+        [ IO_Type = "IOMD"
         EOR     r4, r4, r2           ; check bit-clear test was OK
+        |
+        EOR     r4, r4, r2, LSR #ts_IObswap
+        ]
         ORR     r0, r0, r4              ; accumulate errors in r0
 1
         MOV     r1, r1, LSR #1          ; shift mask downwards
@@ -63,6 +69,9 @@ ts_IOCreg
         BNE     %BT0                    ; and loop until all bits tested
 
         LDR     r8, =ts_IOmask
+        [ IO_Type <> "IOMD"
+        MOV     r8, r8, LSR #ts_IObswap  ; IOC reads D0-D7, writes D16-D23
+        ]
         ANDS    r8, r0, r8
         MOV     pc,r14                   ; return error if any bit failed
 
