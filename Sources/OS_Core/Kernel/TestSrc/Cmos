@@ -34,6 +34,29 @@ ts_CMOSread     ROUT
         STRB    R0, [R2, #Timer0LL]     ; (nonzero in input latch)
         STRB    R0, [R2, #Timer0LH]
         STRB    R0, [R2, #Timer0GO]     ; load the count registers
+        [ MEMM_Type = "MEMC1"
+        ; Abort a pending write before sending recovery clocks.
+        BL      ts_Stop
+        ; Reset may interrupt a CMOS read while the battery-backed slave is
+        ; still transmitting. Release SDA and clock out a byte plus NACK,
+        ; then STOP (NXP UM10204, section 3.1.16, Bus clear).
+        ; Do this even if SDA is high: that may just be a transmitted one.
+        ; If reset caught the ACK before a read byte, the first STOP may
+        ; encounter that byte instead. Retry once if SDA is still low.
+        MOV     R5, #2
+10      MOV     R4, #9
+11      MOV     R0, #1
+        BL      ts_ClockData
+        SUBS    R4, R4, #1
+        BNE     %BT11
+        BL      ts_Stop
+        LDRB    R0, [R2, #IOCControl]
+        TST     R0, #i2c_data_bit
+        BNE     %FT15
+        SUBS    R5, R5, #1
+        BNE     %BT10
+15
+        ]
         BL      ts_Start
         BEQ     %FT30                   ; check clock line toggles OK
         AND     R0, R6, #&FE
