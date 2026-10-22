@@ -34,6 +34,7 @@ WFLAGS  = ~c~v
 #
 COMPONENT = FPEmulator
 TARGET    = rm.${MACHINE}.FPEmulator
+FPEOBJ    = o.${MACHINE}
 EXPORTS   = ${EXP_HDR}.FPEmulator
 
 #
@@ -59,25 +60,16 @@ resources:
         ${CP} Resources.${LOCALE}.Messages  ${RESDIR}.${COMPONENT}.Messages  ${CPFLAGS}
         @echo ${COMPONENT}: resource files copied
 
-# ARM600
+# The entry source selects the exception veneer from the machine header.
+# Keep objects separate when switching between MEMC and ARM600 builds.
 #
-${TARGET}: o.fpe
+${TARGET}: ${FPEOBJ}
         ${MKDIR} rm.${MACHINE}
-        ${LD} -bin -o $@ o.fpe
+        ${LD} -bin -o $@ ${FPEOBJ}
         settype $@ Module
 
-o.fpe: s.fpemedusa
+${FPEOBJ}: s.fpemedusa
         ${AS} -I Hdr:t.^ ${ASFLAGS} s.fpemedusa $@
-
-# ARM2/3
-#
-#${TARGET}: o.fpe400
-#        ${MKDIR} rm.${MACHINE}
-#        ${LD} -bin -o $@ o.fpe400
-#        settype $@ Module
-#
-#o.fpe: s.fpe400
-#        ${AS} -I Hdr:t.^ ${ASFLAGS} s.fpe400 $@
 
 ${EXP_HDR}.FPEmulator: hdr.FPEmulator
         ${CP} hdr.FPEmulator $@ ${CPFLAGS}

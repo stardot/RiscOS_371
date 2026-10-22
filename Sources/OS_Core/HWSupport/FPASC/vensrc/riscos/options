@@ -25,6 +25,16 @@ XMessageTrans_ErrorLookup       *       &61506
 ; Include header files
 ;
                 GET     ListOpts
+
+; The machine build uses fpemedusa; select its actual exception model here,
+; after ListOpts has supplied the symbols needed by the machine header.
+; The standalone fpe400 entry keeps its explicitly selected ARM2/ARM3 path.
+    [ Arm600
+                GET     Hdr:Machine.<Machine>
+Arm600          SETL    (MEMM_Type = "ARM600")
+StrongARM       SETL    Arm600
+SASTMhatbroken  SETL    StrongARM
+    ]
                 GET     Macros
                 GET     Proc
                 GET     Services
@@ -104,6 +114,7 @@ lr_undef        RN      14
 ; SWIs defined in Hdr2:RISCOS for Arm600 builds, but in
 ; Hdr:System (i.e. a non-included file) for other builds
 ;
+XOS_Byte                        *       &20006
 XOS_Module                      *       &2001e
 OS_GenerateError                *       &2b
 

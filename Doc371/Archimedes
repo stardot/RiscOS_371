@@ -70,13 +70,41 @@ restrictions, obtains dimensions and depth from kernel mode variables, and
 applies the original numeric mode. Non-graphic, double-pixel and modes above
 8bpp are excluded. Morris retains the Medusa implementation.
 
+## Application compatibility
+
+SparkPlug exposed an FPEmulator build error: the machine build always selected
+ARM600 exception handling, including its 32-bit undefined-instruction veneer,
+on ARM3. Restoring floating-point state could return to user code with IRQs
+disabled. A subsequent Wimp poll then returned before the task-switch callback
+could restore the application's memory mapping, causing an abort around
+`&00023FD0` in SparkPlug's polling wrapper.
+
+FPEmulator now selects the exception model from the machine header and keeps
+separate intermediate objects for each machine. The standalone ARM2/ARM3
+entry retains its explicit selection. A fresh Morris4 FPEmulator is
+byte-identical to the original ARM600 build.
+
+ArcFS 0.70 on the test disc selects its dynamic-area memory manager from the
+UtilityModule version. This MEMC kernel does not implement `OS_DynamicArea`,
+so that manager cannot initialise. To use the bundled RMA manager, change the
+first `Set Alias$OSSpec` line in `Utilities.!ArcFS.!Run` to:
+
+```
+Set Alias$OSSpec RMEns. ArcFSMemMan 1.10 RMLoad <ArcFS$Dir>.MemManRMA
+```
+
+Preloading MemManRMA alone is insufficient: the original alias requires v1.27
+and reloads MemManDyn over the v1.10 RMA manager. This is an application
+workaround for the MEMC kernel's missing dynamic-area support.
+
 ## Verification, 22 October 2026
 
 Arculator configuration: ARM3 33 MHz, MEMC1a 16 MHz, 4 MB RAM.
 
-* The final 4 MB image passed one cold boot and nine hard resets, all with
+* The POST/header revision of the 4 MB image passed one cold boot and nine
+  hard resets, all with
   green POST result `&51` and no later red border.
-* The final 2 MB image passed POST and booted to the desktop.
+* The POST/header revision of the 2 MB image passed POST and booted to the desktop.
 * Forcing the sentinel to all ones selected forced-test mode and reported
   the expected ROM failure (`&254`). Corrupting the upper ROM at `&300000`
   with the sentinel intact reported ROM failure without forced mode (`&251`).
@@ -99,9 +127,13 @@ modules compared with the pre-change references. SHA-256 values:
 * Display: `5b65c9e65095b9a27168f444a149bd07c33dad74148fcd89a0a0926833f5dfef`
 
 This is a generated-code comparison, not a RISC PC hardware boot test.
-The separately reported Sparkplug application crash remains undiagnosed.
+The rebuilt 4 MB image opens `VISION/ZIP` in SparkPlug and lists its contents.
+The original image still reproduces the abort with the same test setup.
+ArcFS starts with the alias change above, and `Help ArcFSMemMan` confirms the
+RMA manager v1.10. Tests used copies of `/tmp/ST9096A_00KL922987.hdf`; the
+original was not modified. The 2 MB image passes checksum/CRC checks, but the
+same application test stops at a missing SharedCLibrary prerequisite: Arc2
+omits that module and the disc's configured `System:Modules.CLib` is absent.
 
-Final ROM image MD5 values (build outputs are not committed):
-
-* 2 MB: `0b739100511155e22ec22cd5145bddfd`
-* 4 MB: `b195360f678f84bf60826dac17f27abf`
+The fresh Morris4 FPEmulator SHA-256 is:
+`369291b7afd159480580f3be16732360f23765a401296012607541cd4dda0ebb`.
