@@ -1,0 +1,107 @@
+# Archimedes port status
+
+The Arc2 and Arc4 configurations build RISC OS 3.71 for ARM3, MEMC1a,
+IOC/IOEB and VIDC1 hardware. Verification has used an emulated A5000;
+operation on other Archimedes models and physical hardware remains unverified.
+Morris4 is the compatibility target for RISC PC/A7000 builds.
+
+## Building
+
+Use the existing RISC OS build environment. Select `!EnvArc2` for a 2 MB
+image or `!EnvArc4` for a 4 MB image, run the corresponding
+`BuildSys.Arc2.!Config` or `BuildSys.Arc4.!Config`, then `!MkSystem` in that
+build directory. Configuration regenerates the ignored build makefiles.
+The outputs are `Install.Images.2MEG` and `Install.Images.4MEG`.
+On a host filesystem their filetyped names end in `,fe5`.
+
+Run headless builds as a Wimp task after the desktop starts, with sufficient
+WimpSlot. Check the component logs for assembly errors as well as the final
+image result; an older module can otherwise conceal a failed rebuild.
+
+## Power-on self-test
+
+POST is enabled for MEMC1 builds. The original reset loop came from probing
+the RISC PC test-link address: setting A23 above the MEMC ROM base exceeds
+the ARM2/ARM3 address range and causes an address exception. MEMC uses
+A21/A22 aliases for a 2 MB image. With a 4 MB image, it probes a known zero
+at ROM end minus 20 bytes, where A21 is high. Test-link probing stays enabled.
+The ARM600 test-link path retains its original A23 address.
+
+The MEMC entry header uses ARM2/ARM3 instructions with the extended layout:
+ROM length at `&60`, followed by POST vector-table offsets at `&64`, `&68`
+and `&6C`. BigSplit1 writes the image length using its existing `&60` patch.
+Its additional trailer rule reserves the final 20 bytes from modules and
+credits, then writes the zero sentinel before computing checksum and CRCs.
+This rule applies to all images. Morris ROM trailer/checksum metadata changes;
+Morris4 kernel code and data remain byte-identical. BigSplit2 is not used.
+
+The MEMC POST path also corrects IOC read/write byte lanes, sound DMA end
+address and control-register restoration, and the IOEB sound interrupt bit.
+ARM600 RAM-test and MMU operations remain conditional on that memory model.
+The previously omitted `TestSrc/Mem1MEMC1a` source is included in the tree.
+
+Two separate reset faults are fixed:
+
+* Word-aligning `InitKbdWs` prevents rotated ARM3 word loads from reporting
+  spurious CMOS-reset keys and briefly turning the border red after POST.
+* Before reading CMOS, MEMC POST tries STOP, releases SDA and sends nine
+  clocks, then tries STOP again. It repeats once if SDA is still low.
+  Recovery runs even if SDA initially reads high, since that may be a one
+  bit in an interrupted read. This follows the bus-clear procedure in
+  [NXP UM10204, section 3.1.16](https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
+  STOP alone cannot clear a slave that is holding SDA low while transmitting.
+
+The CMOS recovery fixes an intermittent persistent red POST result `&10051`
+after hard reset. An application crash is not needed to reproduce it.
+
+### Remaining RAM-test limitation
+
+The MEMC path tests RAM data/address lines and byte strobes, but lacks the
+broad RAM pattern sweep present in RISC OS 3.11. The 3.71 bulk-test driver
+assumes ARM600 MMU mappings, PhysRamTable and VRAM banks. A MEMC driver still
+needs to be restored; skipping this driver is not a MEMC hardware requirement.
+The existing ARM600 driver remains in place for Morris builds.
+
+## Display Manager
+
+The legacy implementation enumerates numeric modes 0..127 instead of using
+the old dummy table. It checks monitor/memory validity and the Wimp's mode
+restrictions, obtains dimensions and depth from kernel mode variables, and
+applies the original numeric mode. Non-graphic, double-pixel and modes above
+8bpp are excluded. Morris retains the Medusa implementation.
+
+## Verification, 22 October 2026
+
+Arculator configuration: ARM3 33 MHz, MEMC1a 16 MHz, 4 MB RAM.
+
+* The final 4 MB image passed one cold boot and nine hard resets, all with
+  green POST result `&51` and no later red border.
+* The final 2 MB image passed POST and booted to the desktop.
+* Forcing the sentinel to all ones selected forced-test mode and reported
+  the expected ROM failure (`&254`). Corrupting the upper ROM at `&300000`
+  with the sentinel intact reported ROM failure without forced mode (`&251`).
+* Both images passed independent additive-checksum and four-lane CRC checks.
+  Synthetic MEMC 2/4 MB and Morris 4 MB images built with the real BASIC
+  builder also passed; old/new Morris fixtures differ only in the sentinel,
+  additive checksum and CRC fields.
+* The I2C recovery passed 444 emulator state/clock/data combinations and
+  forced interrupted-read tests, including the read-address ACK case.
+* Display Manager exposed 34 usable numeric modes on the tested monitor.
+  Applying modes 30, 8 and 15 was verified through its UI.
+* A CPU-only reset with IOC's power-on flag clear reached the warm-start
+  path and continued executing. Its final screenshot was inconclusive;
+  return to the desktop is not established by that test.
+
+Fresh Morris4 builds produced byte-identical kernel and Display Manager
+modules compared with the pre-change references. SHA-256 values:
+
+* Kernel: `63339a5d073f8023d1a904779ce9b60daf61d44782e79c9d9feb7b76c01152e8`
+* Display: `5b65c9e65095b9a27168f444a149bd07c33dad74148fcd89a0a0926833f5dfef`
+
+This is a generated-code comparison, not a RISC PC hardware boot test.
+The separately reported Sparkplug application crash remains undiagnosed.
+
+Final ROM image MD5 values (build outputs are not committed):
+
+* 2 MB: `0b739100511155e22ec22cd5145bddfd`
+* 4 MB: `b195360f678f84bf60826dac17f27abf`
