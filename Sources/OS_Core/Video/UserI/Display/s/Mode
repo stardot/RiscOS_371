@@ -572,10 +572,9 @@ Mode_GetTable
         SWI     XOS_ScreenMode
         EXIT    VS
  |
-        MOV     r2, #-dummy_count
-        ADR     r7, dummy_start
-        ADRL    lr, dummy_end
-        SUB     r7, r7, lr
+        ; Numeric modes 0..127; bit 7 selects the shadow variant.
+        MOV     r2, #-legacy_mode_count
+        LDR     r7, =-(legacy_mode_count * legacy_desc_size)
  ]
 
         RSBS    r4, r2, #0              ; r4 = number of modes
@@ -629,13 +628,7 @@ Mode_GetTable
         ADREQ   r0, ErrorBlock_Modes_CantEnumerate
         BLEQ    MsgTrans_ErrorLookup
  |
-        ADR     r2, dummy_start
-99
-        SUBS    r7, r7, #1
-        LDRCSB  lr, [r2], #1
-        STRCSB  lr, [r6], #1
-        BCS     %BT99
-        CLRV
+        BL      Mode_GetLegacyTable
  ]
         BLVC    Mode_SortList
         EXIT    VC
@@ -659,162 +652,70 @@ Mode_GetTable
         EXIT
 
  [ :LNOT: Medusa
+; Keep the common descriptor layout, with room for a resolution string and
+; the original numeric mode. Selectors cannot describe MEMC screen modes.
+legacy_mode_count       *       128
+legacy_desc_number      *       mode_desc_name + 16
+legacy_desc_size        *       legacy_desc_number + 4
+
+Mode_GetLegacyTable
         ROUT
- [ {FALSE}
-dummy_count     *       0
-dummy_start
-dummy_end
- |
-dummy_count     *       44
-dummy_start
+        ENTRY   "r0-r9"
 
-        DCD     &24,1,&420,&100,0,&46
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,1,&46
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,2,&46
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,3,&46
-        DCB     "1056 x 256",0
-        ALIGN
+        MOV     r8, #0
+        MOV     r9, r6
+10
+        MOV     r0, #legacy_desc_size
+        STR     r0, [r9, #mode_desc_size]
+        MOV     r0, #0                  ; Unavailable unless all queries succeed.
+        STR     r0, [r9, #mode_desc_flags]
+        STRB    r0, [r9, #mode_desc_name]
+        STR     r8, [r9, #legacy_desc_number]
 
-        DCD     &24,1,&420,&100,0,&3C
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,1,&3C
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,2,&3C
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,3,&3C
-        DCB     "1056 x 256",0
-        ALIGN
+        MOV     r0, r8
+        SWI     XOS_CheckModeValid      ; Reject monitor/memory substitutes too.
+        BVS     %FT20
+        BCS     %FT20
+        MOV     r0, r8
+        MOV     r1, #VduExt_ModeFlags
+        SWI     XOS_ReadModeVariable
+        BCS     %FT20
+        TST     r2, #Flag_NonGraphic    ; Match the Wimp's mode validation.
+        BNE     %FT20
+        MOV     r2, r8
+        BL      Mode_GetInfo
+        BVS     %FT20
+        CMP     r5, #3                  ; VIDC1 supports at most 8bpp.
+        BHI     %FT20
+        MOV     r0, r8
+        MOV     r1, #VduExt_Log2BPC
+        SWI     XOS_ReadModeVariable
+        BCS     %FT20
+        CMP     r2, r5                  ; The Wimp cannot use double-pixel modes.
+        BNE     %FT20
+        ADD     r0, r9, #mode_desc_xres
+        STMIA   r0, {r3-r6}
 
-        DCD     &24,1,&420,&100,0,&32
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,1,&32
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,2,&32
-        DCB     "1056 x 256",0
-        ALIGN
-        DCD     &24,1,&420,&100,3,&32
-        DCB     "1056 x 256",0
-        ALIGN
-
-        DCD     &24,1,&420,&FA,0,&32
-        DCB     "1056 x 250",0
-        ALIGN
-        DCD     &24,1,&420,&FA,1,&32
-        DCB     "1056 x 250",0
-        ALIGN
-        DCD     &24,1,&420,&FA,2,&32
-        DCB     "1056 x 250",0
-        ALIGN
-        DCD     &24,1,&420,&FA,3,&32
-        DCB     "1056 x 250",0
-        ALIGN
-
-        DCD     &1C,1,&300,&120,0,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&300,&120,1,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&300,&120,2,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&300,&120,3,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&300,&120,4,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&300,&120,5,&32
-        DCB     0
-        ALIGN
-
-        DCD     &1C,1,&280,&100,0,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&100,1,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&100,2,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&100,3,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&100,4,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&100,5,&32
-        DCB     0
-        ALIGN
-
-        DCD     &1C,1,&280,&FA,0,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&FA,1,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&FA,2,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&FA,3,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&FA,4,&32
-        DCB     0
-        ALIGN
-        DCD     &1C,1,&280,&FA,5,&32
-        DCB     0
-        ALIGN
-
-        DCD     &24,1,&140,&100,0,&32
-        DCB     "320 x 256",0
-        ALIGN
-        DCD     &24,1,&140,&100,1,&32
-        DCB     "320 x 256",0
-        ALIGN
-        DCD     &24,1,&140,&100,2,&32
-        DCB     "320 x 256",0
-        ALIGN
-        DCD     &24,1,&140,&100,3,&32
-        DCB     "320 x 256",0
-        ALIGN
-        DCD     &24,1,&140,&100,4,&32
-        DCB     "320 x 256",0
-        ALIGN
-
-        DCD     &24,1,&140,&FA,0,&32
-        DCB     "320 x 250",0
-        ALIGN
-        DCD     &24,1,&140,&FA,1,&32
-        DCB     "320 x 250",0
-        ALIGN
-        DCD     &24,1,&140,&FA,2,&32
-        DCB     "320 x 250",0
-        ALIGN
-        DCD     &24,1,&140,&FA,3,&32
-        DCB     "320 x 250",0
-        ALIGN
-        DCD     &24,1,&140,&FA,4,&32
-        DCB     "320 x 250",0
-        ALIGN
-
-dummy_end
- ]
+        MOV     r0, r3
+        ADD     r1, r9, #mode_desc_name
+        MOV     r2, #16
+        SWI     XOS_ConvertCardinal4
+        ADRVC   r0, resolution_spacer
+        BLVC    Mod_CopyString
+        LDRVC   r0, [r9, #mode_desc_yres]
+        SWIVC   XOS_ConvertCardinal4
+        MOVVC   r0, #1
+        STRVC   r0, [r9, #mode_desc_flags]
+20
+        ADD     r9, r9, #legacy_desc_size
+        ADD     r8, r8, #1
+        CMP     r8, #legacy_mode_count
+        BCC     %BT10
+        CLRV
+        EXIT
  ]
 
         MakeErrorBlock  Modes_CantEnumerate
-
 
 ;---------------------------------------------------------------------------
 ; Mode_SortList
@@ -988,6 +889,10 @@ Mode_PixelShape
 Mode_BuildSpecifier
         ENTRY   "r0,r1,r3-r5"
 
+ [ :LNOT: Medusa
+        LDR     r2, [r2, #legacy_desc_number]
+        EXIT
+ |
         ASSERT  mode_desc_yres = mode_desc_xres + 4
         ASSERT  mode_desc_depth = mode_desc_yres + 4
         ASSERT  mode_desc_rate = mode_desc_depth + 4
@@ -1000,6 +905,7 @@ Mode_BuildSpecifier
         STMIA   r2, {r0,r1,r3,r4,r5,lr}
 
         EXIT
+ ]
 
 
 ;---------------------------------------------------------------------------
