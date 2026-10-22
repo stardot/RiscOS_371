@@ -20,4 +20,8 @@ test_version SETL {FALSE}
         GBLL    Top16Write
         GBLL    IOMD
 
+; Opt in to sector-addressed IDE without changing the legacy A1/ST506 build.
+        GBLL    IDEBigDisc
+IDEBigDisc      SETL    {FALSE}
+
         END

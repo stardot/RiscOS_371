@@ -47,7 +47,16 @@ EscapeBit       bit 6           ;escape if this bit set in ESC_Status
 ; BigDisc - if true then use sector addressing, false use byte
 
 	GBLL	BigDisc
+ [ IOMD :LOR: IDEBigDisc
 BigDisc	SETL	{TRUE}
+ |
+BigDisc	SETL	{FALSE}
+ ]
+
+; ST506 remains byte-addressed. Top16Write also controls the IDE data bus,
+; so it must remain independent of whether the ST506 driver is included.
+        GBLL    IncludeST506
+IncludeST506    SETL    Top16Write :LAND: :LNOT: IDEBigDisc
 
  [ BigDisc
 BigBit * BigDiscSupport

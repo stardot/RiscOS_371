@@ -1,0 +1,40 @@
+# Large-disc filesystem regression test
+
+Use a disposable, freshly initialised ADFS drive 5 with 1,056,964,608 bytes
+(2048 cylinders, 16 heads, 63 sectors, 512-byte sectors). BigFS creates or
+replaces `ADFS::5.$.BigFile`, reserving 600 MB. The raw sector test used during
+bring-up must run before formatting; it is not part of this file test.
+
+Load the plain BASIC source with `TEXTLOAD`, then `RUN`. The test checks the
+disc size, creates a 600 MB file, writes four consecutive 4 KB patterns
+starting 1 KB below the 512 MB file offset, closes and reopens the file,
+checks its extent, seeks back and compares every word. It reports BIGFS PASS
+or the failing line. The large file remains available for dismount/remount
+and deletion checks. Delete BigFile afterwards to return its allocation.
+
+This test addresses the 512 MB boundary. It does not verify the 2 GB per-file
+limit, large-disc booting, LBA, other controllers, or physical hardware.
+
+## Raw driver test
+
+`BigIDE.s` is a GNU assembler source for an ARM3 diagnostic module. It writes
+2 KB blocks at sectors 16, 1048574, 1048576, 1048578 and 2064380 on drive 5,
+then clears the buffer and compares readback byte by byte. Each address is
+tested with buffer alignments 0, 1, 2 and 3. The block starting at sector 1048574 crosses
+512 MB and the final block ends at the disc boundary. These writes destroy
+any existing filesystem content at those locations: use a separate blank
+image of the geometry above, before formatting it.
+
+Build on the host:
+
+```
+arm-none-eabi-as -o BigIDE.o BigIDE.s
+arm-none-eabi-objcopy -O binary BigIDE.o BigIDE,ffa
+```
+
+Configure two IDE drives and load the module with `RMLoad`. It prints PASS
+or FAIL. Its BIGIDE01 result block holds the completed comparison count
+(20 on success), status (&600D on success), failing sector and buffer address.
+The 8 KB buffer remains claimed for inspection; reset the guest afterwards.
+Host-side inspection of the sparse image should confirm that the written
+patterns occur at the intended byte offsets, excluding address wraparound.

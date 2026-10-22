@@ -70,6 +70,41 @@ restrictions, obtains dimensions and depth from kernel mode variables, and
 applies the original numeric mode. Non-graphic, double-pixel and modes above
 8bpp are excluded. Morris retains the Medusa implementation.
 
+## Large IDE discs
+
+The A5000 ADFS configuration opts into sector addressing with `IDEBigDisc`.
+`IncludeST506` separates inclusion of the byte-addressed ST506 driver from
+`Top16Write`, which still selects the A5000 IDE data-bus wiring. The A1
+configuration retains its legacy byte-addressed ST506 path. The A5000 sector
+build does not include ST506 support; it must not dispatch ST506 requests to
+the IDE driver. Morris keeps its existing sector-addressed implementation.
+
+FileCore already has `BigDisc` enabled and claims map storage from the RMA.
+No dynamic-area API is needed for this support. Byte addressing limits disc
+offsets; it does not distinguish old-map from new-map filesystem formats.
+
+A disposable 1008 MB image (2048 cylinders, 16 heads, 63 sectors, 512-byte
+sectors) passed 20 raw sector write/read comparisons below, across and above
+512 MB, including the last block, at all four byte alignments. The raw
+module source is `ADFS/ADFS/Test/BigIDE.s`.
+Host-side inspection confirmed the written offsets. Bundled HForm 2.48
+initialised and mounted it with the expected capacity and free-space count.
+On the final 4 MB ROM, FileCore created a 600 MB file, wrote four consecutive
+4 KB patterns starting 1 KB below the 512 MB file offset, closed and reopened
+the file, verified its extent, and compared every word successfully. A
+read-only rerun after dismount/remount also passed. Deleting the file restored
+free space from 427,683,840 to 1,056,829,440 bytes, matching the freshly
+initialised filesystem. The plain BASIC regression source is in `ADFS/ADFS/Test/BigFS`.
+
+This Arculator revision calculates IDE image offsets in signed 32-bit `int`
+variables, which prevents reliable verification at or above 2 GB. This is an
+emulator limitation, separate from ROM addressing. FileCore also explicitly
+rejects file extents with bit 31 set (`TwoGigFix`); larger discs do not remove
+that per-file size restriction. Legacy byte-addressed `ADFS_DiscOp` callers
+must use `ADFS_SectorDiscOp` to address above 512 MB; FileCore already uses the
+sector interface when the parent advertises it. Physical hardware, LBA and
+ST506 runtime remain unverified by the large-disc tests.
+
 ## Application compatibility
 
 SparkPlug exposed an FPEmulator build error: the machine build always selected
@@ -121,13 +156,16 @@ Arculator configuration: ARM3 33 MHz, MEMC1a 16 MHz, 4 MB RAM.
   return to the desktop is not established by that test.
 
 Fresh Morris4 builds produced byte-identical kernel and Display Manager
-modules compared with the pre-change references. SHA-256 values:
+modules compared with the pre-change references. A fresh Morris4 ADFS also
+remains byte-identical after the IDE changes. SHA-256 values:
 
 * Kernel: `63339a5d073f8023d1a904779ce9b60daf61d44782e79c9d9feb7b76c01152e8`
 * Display: `5b65c9e65095b9a27168f444a149bd07c33dad74148fcd89a0a0926833f5dfef`
+* ADFS: `3ba6355c7af9933135567cdaad758b44162e0f31030a9f4850f5097333150377`
 
 This is a generated-code comparison, not a RISC PC hardware boot test.
-The rebuilt 4 MB image opens `VISION/ZIP` in SparkPlug and lists its contents.
+The rebuilt 4 MB image opens `VISION/ZIP` in SparkPlug and lists its contents,
+including after the IDE changes.
 The original image still reproduces the abort with the same test setup.
 ArcFS starts with the alias change above, and `Help ArcFSMemMan` confirms the
 RMA manager v1.10. Tests used copies of `/tmp/ST9096A_00KL922987.hdf`; the
@@ -137,3 +175,8 @@ omits that module and the disc's configured `System:Modules.CLib` is absent.
 
 The fresh Morris4 FPEmulator SHA-256 is:
 `369291b7afd159480580f3be16732360f23765a401296012607541cd4dda0ebb`.
+
+Current ROM image MD5 values (build outputs are not committed):
+
+* 2 MB: `e2a0db8f64c63757e7d90179520fd27e`
+* 4 MB: `118c340f4a2cf1c0de91184fea19551a`

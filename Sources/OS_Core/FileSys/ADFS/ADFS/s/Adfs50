@@ -97,7 +97,7 @@ InitEntry ROUT                           ; NO REENTRANCY CHECK NEEDED
 
 ; IDE driver must use ALowReadCode and ALowWriteCode so need space for that
 
-  [ :LNOT: Top16Write
+  [ :LNOT: IncludeST506
         LDR     R3,=:INDEX:AWorkSize
   |
    [ AWorkSize > BWorkSize
@@ -618,7 +618,7 @@ DoSwiHDC
         LDRB    R11,Winnies
         TEQS    R11,#0
  [ FileCache
-  [ Top16Write
+  [ IncludeST506
         BLNE    ReleaseWinnieIRQs
   ]
  ]
@@ -639,7 +639,7 @@ DoSwiHDC
         SUBNE   R2, R2, #dataRead
  ]
  [ FileCache
-  [ Top16Write
+  [ IncludeST506
         BLNE    ClaimWinnieIRQs
   ]
  ]
@@ -1559,7 +1559,7 @@ ComTab                                          ;general star commands
         Config  ADFSDirCache
         Config  Drive
         Config  Floppies
- [ Top16Write
+ [ IncludeST506
         Config  HardDiscs
  ]
         Config  IDEDiscs
@@ -1819,7 +1819,7 @@ ConFloppies ROUT
         MOV     R1, #NewCMOS0
         B       ConWrite
 
- [ Top16Write
+ [ IncludeST506
 ; >>>>>>>>>>>>
 ; ConHardDiscs
 ; >>>>>>>>>>>>

@@ -1,0 +1,30 @@
+ON ERROR PRINT "BIGFS FAIL ";REPORT$;" line ";ERL:END
+DIM buf% 4095,rec% 63
+SYS "ADFS_DescribeDisc",":5",rec%
+PRINT "Disc bytes ";rec%!16
+IF rec%!16<>1056964608 ERROR 1,"Wrong disc size"
+SYS "OS_File",11,":5.$.BigFile",&FFD,,0,600*1024*1024
+h%=OPENUP(":5.$.BigFile")
+IF h%=0 ERROR 1,"Open failed"
+FOR k%=0 TO 3
+p%=512*1024*1024-1024+k%*4096
+FOR i%=0 TO 4092 STEP 4:buf%!i%=p% EOR i%:NEXT
+PTR#h%=p%
+SYS "OS_GBPB",2,h%,buf%,4096 TO ,,,left%
+IF left%<>0 ERROR 1,"Short write"
+NEXT
+CLOSE#h%
+h%=OPENIN(":5.$.BigFile")
+IF EXT#h%<>600*1024*1024 ERROR 1,"Wrong extent"
+FOR k%=0 TO 3
+p%=512*1024*1024-1024+k%*4096
+PTR#h%=p%
+SYS "OS_GBPB",4,h%,buf%,4096 TO ,,,left%
+IF left%<>0 ERROR 1,"Short read"
+FOR i%=0 TO 4092 STEP 4
+IF buf%!i%<>(p% EOR i%) ERROR 1,"Mismatch"
+NEXT
+NEXT
+CLOSE#h%
+PRINT "BIGFS PASS: 600 MB extent, boundary writes and reopen reads"
+END

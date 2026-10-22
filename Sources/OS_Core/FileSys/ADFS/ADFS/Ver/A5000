@@ -1,0 +1,9 @@
+        GET     Version
+
+A1              SETL    {TRUE}
+FDC1772         SETL    {TRUE}
+Top16Write      SETL    {TRUE}
+IOMD            SETL    {FALSE}
+IDEBigDisc      SETL    {TRUE}
+
+        END

@@ -204,7 +204,7 @@ WinInit ROUT
         MOV     R4,R4,LSR #3            ; shift to get IDE drives
         STRB    R4,WinIDEDrives
 
- [ Top16Write
+ [ IncludeST506
 ; See if any ST506 to setup
 ; R0 = configured ST506 drives
 
@@ -485,7 +485,7 @@ WinDie  ROUT
 
         LDRB    LR,Winnies              ; any ST506 drives?
         TEQS    LR,#0
-   [ Top16Write
+   [ IncludeST506
         BLNE    ReleaseWinnieIRQs       ; release IRQs if so
    ]
   ]
@@ -544,7 +544,7 @@ WinReset        ROUT
         LDRB    LR,Winnies              ; any ST506 drives?
         TEQS    LR,#0
         BEQ     %FT10
-   [ Top16Write
+   [ IncludeST506
         BL      ReleaseWinnieIRQs
         BL      ClaimWinnieIRQs
    ]
@@ -711,7 +711,7 @@ WinLowLevel  ROUT
 ; error may also need to include it and that is best done in the
 ; driver.
 
- [ :LNOT: Top16Write
+ [ :LNOT: IncludeST506
         BL      WinLowLevelIDE
  |
         pcadr   LR,%F10                         ; set return address
@@ -806,7 +806,7 @@ WinMount        ROUT
         baddr   R5,WinIDETestDiscRec,CC ; R5 -> IDE test disc record
  ]
 
- [ Top16Write
+ [ IncludeST506
         pcadr   LR,%F80,CS              ; set return address
         BCS     WinnieDrivers           ; branch to old ST506 driver
  ]

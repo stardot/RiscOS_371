@@ -1,4 +1,4 @@
- [ Top16Write
+ [ IncludeST506
 	ASSERT :LNOT: BigDisc
         SUBT    New ST506 Winchester Driver -> Adfs11
 
@@ -156,7 +156,7 @@ HDCcommand      *    0 + HDCBase ;WRITE
 HDCparameter    *    4 + HDCBase ;WRITE
 HDCdataRead * dataRead + HDCBase ;READ
 
- [ Top16Write
+ [ IncludeST506
 HDCstatus       *  &20 + HDCBase ;READ
 POL     bit 1+8         ;polling
 ABN     bit 2+8         ;abnormal end
@@ -184,7 +184,7 @@ WinnieBits  * DataReqBit + IntReqBit
 WinPodIRQrequest bit 0
 ; Only use the fact that it's requesting something, look in HDCstatus for what.
  ]
- [ Top16Write
+ [ IncludeST506
 
 ; now a number of HDC commands
 
@@ -1937,7 +1937,7 @@ ARead256at4Nplus3 ROUT
 ALowReadCodeEnd
 ALowReadCodeSize * ALowReadCodeEnd - ALowReadCodeStart
 
- [ Top16Write
+ [ IncludeST506
 BLowReadCodeStart ROUT
         ASSERT  :INDEX: HDCdataRead=0
         MOVS    R2, R1, LSL #31         ;NE <=> bit 0, CS <=> bit 1
@@ -2468,7 +2468,7 @@ ALowWriteCodeEnd
 ALowWriteCodeSize * ALowWriteCodeEnd - ALowWriteCodeStart
  ]
 
- [ Top16Write
+ [ IncludeST506
 
 BLowWriteCodeStart ROUT
         MOVS    R2, R1, LSL #31         ;NE <=> bit 0, CS <=> bit 1
@@ -2599,7 +2599,7 @@ AWorkSize * LowCodeLocation+ALowCodeSize
  |
 AWorkSize * LowCodeLocation+ALowCodeSize+8*4-(ALowCodeSize :MOD: (8*4))
  ]
- [ Top16Write
+ [ IncludeST506
 
  [ BLowWriteCodeSize > BLowReadCodeSize
 BLowCodeSize    * BLowWriteCodeSize
